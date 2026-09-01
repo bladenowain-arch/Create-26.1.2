@@ -51,9 +51,10 @@ public class RecipeFinder {
 
 	private static List<RecipeHolder<? extends Recipe<?>>> startSearch(Level level, Predicate<? super RecipeHolder<? extends Recipe<?>>> conditions) {
 		List<RecipeHolder<? extends Recipe<?>>> recipes = new ArrayList<>();
-		for (RecipeHolder<? extends Recipe<?>> r : level.recipeAccess().getRecipes())
-			if (conditions.test(r))
-				recipes.add(r);
+		for (RecipeHolder<?> r : level.recipeAccess().recipeMap().byType(net.minecraft.world.item.crafting.RecipeType.CRAFTING)) {
+			if (conditions.test((RecipeHolder<? extends Recipe<?>>) r))
+				recipes.add((RecipeHolder<? extends Recipe<?>>) r);
+		}
 		return recipes;
 	}
 }
