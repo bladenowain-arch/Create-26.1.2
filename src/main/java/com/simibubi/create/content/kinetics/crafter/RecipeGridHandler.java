@@ -22,7 +22,6 @@ import net.createmod.catnip.math.Pointing;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -143,16 +142,15 @@ public class RecipeGridHandler {
 		items.calcStats();
 		CraftingInput craftingInput = MechanicalCraftingInput.of(items);
 		ItemStack result = null;
-		RegistryAccess registryAccess = world.registryAccess();
 		if (AllConfigs.server().recipes.allowRegularCraftingInCrafter.get())
-			result = world.getRecipeManager()
+			result = world.recipeAccess()
 				.getRecipeFor(RecipeType.CRAFTING, craftingInput, world)
 				.filter(r -> isRecipeAllowed(r, craftingInput))
-				.map(r -> r.value().assemble(craftingInput, registryAccess))
+				.map(r -> r.value().assemble(craftingInput))
 				.orElse(null);
 		if (result == null)
 			result = AllRecipeTypes.MECHANICAL_CRAFTING.find(craftingInput, world)
-				.map(r -> r.value().assemble(craftingInput, registryAccess))
+				.map(r -> r.value().assemble(craftingInput))
 				.orElse(null);
 		return result;
 	}
