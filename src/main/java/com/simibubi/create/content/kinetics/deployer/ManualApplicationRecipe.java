@@ -54,7 +54,8 @@ public class ManualApplicationRecipe extends ItemApplicationRecipe {
 
 		RecipeType<Recipe<RecipeWrapper>> type = AllRecipeTypes.ITEM_APPLICATION.getType();
 		Optional<RecipeHolder<Recipe<RecipeWrapper>>> foundRecipe = level.recipeAccess()
-			.getAllRecipesFor(type)
+			.recipeMap()
+			.getRecipesFor(type, new RecipeWrapper(heldItem), level)
 			.stream()
 			.filter(r -> {
 				ManualApplicationRecipe mar = (ManualApplicationRecipe) r.value();
