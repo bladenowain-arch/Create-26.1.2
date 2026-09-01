@@ -145,7 +145,7 @@ dependencies {
 
     localRuntimeOnly("dev.architectury:architectury-neoforge:20.0.7+neoforge")
     localImplementation("curse.maven:ftb-chunks-forge-314906:8216858")
-    localImplementation("curse.maven:ftb-teams-forge-404468:7921353")
+    localImplementation("curse.maven:ftb-teams-forge-404468:8074003")
     localImplementation("curse.maven:ftb-library-forge-404465:8160272")
 
     localImplementation("maven.modrinth:journeymap:26.1.2-6.0.7+neoforge")
@@ -255,7 +255,6 @@ publishMods {
         tagName = "mc$minecraft_version-$mod_version"
         file.unset()
         file.unsetConvention()
-
         allowEmptyFiles = true
     }
 }
