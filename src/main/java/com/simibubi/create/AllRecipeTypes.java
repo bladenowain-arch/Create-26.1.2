@@ -39,7 +39,7 @@ import com.simibubi.create.foundation.recipe.ItemCopyingRecipe;
 import net.createmod.catnip.lang.Lang;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -55,7 +55,6 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
-
 	CONVERSION(ConversionRecipe::new),
 	CRUSHING(CrushingRecipe::new),
 	CUTTING(CuttingRecipe::new),
@@ -71,18 +70,14 @@ public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 	FILLING(FillingRecipe::new),
 	EMPTYING(EmptyingRecipe::new),
 	ITEM_APPLICATION(ManualApplicationRecipe::new),
-
 	MECHANICAL_CRAFTING(MechanicalCraftingRecipe.Serializer::new),
 	SEQUENCED_ASSEMBLY(SequencedAssemblyRecipeSerializer::new),
-
 	TOOLBOX_DYEING(() -> new SimpleCraftingRecipeSerializer<>(ToolboxDyeingRecipe::new), () -> RecipeType.CRAFTING, false),
 	ITEM_COPYING(() -> new SimpleCraftingRecipeSerializer<>(ItemCopyingRecipe::new), () -> RecipeType.CRAFTING, false);
 
-	public static final Predicate<RecipeHolder<?>> CAN_BE_AUTOMATED = r -> !r.id()
-			.getPath()
-			.endsWith("_manual_only");
+	public static final Predicate<RecipeHolder<?>> CAN_BE_AUTOMATED = r -> !r.id().getPath().endsWith("_manual_only");
 
-	public final ResourceLocation id;
+	public final Identifier id;
 	public final Supplier<RecipeSerializer<?>> serializerSupplier;
 	private final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<?>> serializerObject;
 	@Nullable
@@ -136,7 +131,7 @@ public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 	}
 
 	@Override
-	public ResourceLocation getId() {
+	public Identifier getId() {
 		return id;
 	}
 
@@ -153,8 +148,7 @@ public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 	}
 
 	public <I extends RecipeInput, R extends Recipe<I>> Optional<RecipeHolder<R>> find(I inv, Level world) {
-		return world.getRecipeManager()
-			.getRecipeFor(getType(), inv, world);
+		return world.getRecipeManager().getRecipeFor(getType(), inv, world);
 	}
 
 	public static boolean shouldIgnoreInAutomation(RecipeHolder<?> recipe) {
@@ -173,5 +167,4 @@ public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 		private static final DeferredRegister<RecipeSerializer<?>> SERIALIZER_REGISTER = DeferredRegister.create(BuiltInRegistries.RECIPE_SERIALIZER, Create.ID);
 		private static final DeferredRegister<RecipeType<?>> TYPE_REGISTER = DeferredRegister.create(Registries.RECIPE_TYPE, Create.ID);
 	}
-
 }
