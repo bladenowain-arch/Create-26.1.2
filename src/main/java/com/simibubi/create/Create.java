@@ -57,7 +57,6 @@ import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForgeMod;
@@ -108,7 +107,6 @@ public class Create {
 
 	public static void onCtor(IEventBus modEventBus, ModContainer modContainer) {
 		LOGGER.info("{} {} initializing! Commit hash: {}", NAME, CreateBuildInfo.VERSION, CreateBuildInfo.GIT_COMMIT);
-		ModLoadingContext modLoadingContext = ModLoadingContext.get();
 
 		REGISTRATE.registerEventListeners(modEventBus);
 
@@ -137,20 +135,16 @@ public class Create {
 		AllMapDecorationTypes.register(modEventBus);
 		AllMountedStorageTypes.register();
 
-		AllConfigs.register(modLoadingContext, modContainer);
+		AllConfigs.register(modContainer);
 
-		// TODO - Make these use Registry.register and move them into the RegisterEvent
 		AllPackagePortTargetTypes.register(modEventBus);
-
 		AllSchematicStateFilters.registerDefaults();
 
 		// FIXME: some of these registrations are not thread-safe
 		BogeySizes.init();
 		AllBogeyStyles.init();
-		// ----
 
 		ComputerCraftProxy.register();
-
 		NeoForgeMod.enableMilkFluid();
 
 		modEventBus.addListener(Create::init);
@@ -170,9 +164,6 @@ public class Create {
 		CreateNBTProcessors.register();
 
 		event.enqueueWork(() -> {
-			// TODO: custom registration should all happen in one place
-			// Most registration happens in the constructor.
-			// These registrations use Create's registered objects directly so they must run after registration has finished.
 			BoilerHeaters.registerDefaults();
 			AllPortalTracks.registerDefaults();
 			AllBlockSpoutingBehaviours.registerDefaults();
@@ -183,7 +174,6 @@ public class Create {
 			AllMountedDispenseItemBehaviors.registerDefaults();
 			AllUnpackingHandlers.registerDefaults();
 			AllInventoryIdentifiers.registerDefaults();
-			// --
 		});
 	}
 
