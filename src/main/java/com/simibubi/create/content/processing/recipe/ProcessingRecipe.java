@@ -49,6 +49,7 @@ public abstract class ProcessingRecipe<I extends RecipeInput, P extends Processi
 		this.ingredients = params.ingredients;
 		this.fluidIngredients = params.fluidIngredients;
 		this.results = params.results;
+		this.fluidResults = params.fluidResults;
 		this.processingDuration = params.processingDuration;
 		this.requiredHeat = params.requiredHeat;
 		this.type = typeInfo.getType();
@@ -59,7 +60,6 @@ public abstract class ProcessingRecipe<I extends RecipeInput, P extends Processi
 
 	protected abstract int getMaxInputCount();
 	protected abstract int getMaxOutputCount();
-
 	protected boolean canRequireHeat() { return false; }
 	protected boolean canSpecifyDuration() { return false; }
 	protected int getMaxFluidInputCount() { return 0; }
@@ -69,20 +69,14 @@ public abstract class ProcessingRecipe<I extends RecipeInput, P extends Processi
 		List<String> errors = new ArrayList<>();
 		int ingredientCount = ingredients.size();
 		int outputCount = results.size();
-		if (ingredientCount > getMaxInputCount())
-			errors.add("Recipe has more item inputs (" + ingredientCount + ") than supported (" + getMaxInputCount() + ").");
-		if (outputCount > getMaxOutputCount())
-			errors.add("Recipe has more item outputs (" + outputCount + ") than supported (" + getMaxOutputCount() + ").");
+		if (ingredientCount > getMaxInputCount()) errors.add("Recipe has more item inputs (" + ingredientCount + ") than supported (" + getMaxInputCount() + ").");
+		if (outputCount > getMaxOutputCount()) errors.add("Recipe has more item outputs (" + outputCount + ") than supported (" + getMaxOutputCount() + ").");
 		ingredientCount = fluidIngredients.size();
 		outputCount = fluidResults.size();
-		if (ingredientCount > getMaxFluidInputCount())
-			errors.add("Recipe has more fluid inputs (" + ingredientCount + ") than supported (" + getMaxFluidInputCount() + ").");
-		if (outputCount > getMaxFluidOutputCount())
-			errors.add("Recipe has more fluid outputs (" + outputCount + ") than supported (" + getMaxFluidOutputCount() + ").");
-		if (processingDuration > 0 && !canSpecifyDuration())
-			errors.add("Recipe specified a duration. Durations have no impact on this type of recipe.");
-		if (requiredHeat != HeatCondition.NONE && !canRequireHeat())
-			errors.add("Recipe specified a heat condition. Heat conditions have no impact on this type of recipe.");
+		if (ingredientCount > getMaxFluidInputCount()) errors.add("Recipe has more fluid inputs (" + ingredientCount + ") than supported (" + getMaxFluidInputCount() + ").");
+		if (outputCount > getMaxFluidOutputCount()) errors.add("Recipe has more fluid outputs (" + outputCount + ") than supported (" + getMaxFluidOutputCount() + ").");
+		if (processingDuration > 0 && !canSpecifyDuration()) errors.add("Recipe specified a duration. Durations have no impact on this type of recipe.");
+		if (requiredHeat != HeatCondition.NONE && !canRequireHeat()) errors.add("Recipe specified a heat condition. Heat conditions have no impact on this type of recipe.");
 		return errors;
 	}
 
