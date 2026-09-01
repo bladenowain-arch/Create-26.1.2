@@ -18,6 +18,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeInput;
@@ -100,9 +101,13 @@ public abstract class ProcessingRecipe<I extends RecipeInput, P extends Processi
 	public int getProcessingDuration() { return processingDuration; }
 	public HeatCondition getRequiredHeat() { return requiredHeat; }
 
-	@Override public ItemStack assemble(I t) { return getResultItem(); }
+	@Override public ItemStack assemble(I t) { return getResultItem().create(); }
 	@Override public boolean canCraftInDimensions(int width, int height) { return true; }
-	@Override public ItemStack getResultItem() { return getRollableResults().isEmpty() ? ItemStack.EMPTY : getRollableResults().getFirst().getStack(); }
+	@Override public ItemStackTemplate getResultItem() {
+		if (getRollableResults().isEmpty())
+			throw new IllegalStateException("Processing recipe has no item result");
+		return ItemStackTemplate.fromNonEmptyStack(getRollableResults().getFirst().getStack());
+	}
 	@Override public boolean isSpecial() { return true; }
 	@Override public String getGroup() { return "processing"; }
 	@Override public RecipeSerializer<?> getSerializer() { return serializer; }
