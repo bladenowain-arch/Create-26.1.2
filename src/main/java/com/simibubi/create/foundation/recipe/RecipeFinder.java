@@ -51,7 +51,7 @@ public class RecipeFinder {
 
 	private static List<RecipeHolder<? extends Recipe<?>>> startSearch(Level level, Predicate<? super RecipeHolder<? extends Recipe<?>>> conditions) {
 		List<RecipeHolder<? extends Recipe<?>>> recipes = new ArrayList<>();
-		for (RecipeHolder<? extends Recipe<?>> r : level.getRecipeManager().getRecipes())
+		for (RecipeHolder<? extends Recipe<?>> r : level.recipeAccess().getRecipes())
 			if (conditions.test(r))
 				recipes.add(r);
 		return recipes;
