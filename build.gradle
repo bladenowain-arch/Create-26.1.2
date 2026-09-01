@@ -143,18 +143,14 @@ dependencies {
         localImplementation("maven.modrinth:farmers-delight:${farmers_delight_version}")
     }
 
-    localRuntimeOnly("dev.architectury:architectury-neoforge:13d.0.8")
-    localImplementation("dev.ftb.mods:ftb-chunks-neoforge:2101.1.1")
-    localImplementation("dev.ftb.mods:ftb-teams-neoforge:2101.1.0")
-    localImplementation("dev.ftb.mods:ftb-library-neoforge:2101.1.3")
+    localRuntimeOnly("dev.architectury:architectury-neoforge:20.0.7+neoforge")
+    localImplementation("curse.maven:ftb-chunks-forge-314906:8216858")
+    localImplementation("curse.maven:ftb-teams-forge-404468:7921353")
+    localImplementation("curse.maven:ftb-library-forge-404465:8160272")
 
-    localImplementation("maven.modrinth:journeymap:1.21.1-6.0.0-beta.54+neoforge")
-    localImplementation("info.journeymap:journeymap-api-neoforge:2.0.0-1.21.1-20260205.200232-15") {
-        exclude(group: "curse.maven")
-    }
+    localImplementation("maven.modrinth:journeymap:26.1.2-6.0.7+neoforge")
 
-    compileOnly("xaero.lib:xaerolib-neoforge-1.21:1.0.42")
-    compileOnly("curse.maven:xaeros-world-map-317780:7401095")
+    compileOnly("curse.maven:xaeros-world-map-317780:8425775")
 }
 
 sourceSets.main {
