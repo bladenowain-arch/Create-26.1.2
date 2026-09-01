@@ -13,7 +13,6 @@ import com.mojang.serialization.MapCodec;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -50,7 +49,6 @@ public abstract class ProcessingRecipe<I extends RecipeInput, P extends Processi
 		this.ingredients = params.ingredients;
 		this.fluidIngredients = params.fluidIngredients;
 		this.results = params.results;
-		this.fluidResults = params.fluidResults;
 		this.processingDuration = params.processingDuration;
 		this.requiredHeat = params.requiredHeat;
 		this.type = typeInfo.getType();
@@ -59,180 +57,77 @@ public abstract class ProcessingRecipe<I extends RecipeInput, P extends Processi
 		this.forcedResult = null;
 	}
 
-	// Recipe type options:
-
 	protected abstract int getMaxInputCount();
-
 	protected abstract int getMaxOutputCount();
 
-	protected boolean canRequireHeat() {
-		return false;
-	}
-
-	protected boolean canSpecifyDuration() {
-		return false;
-	}
-
-	protected int getMaxFluidInputCount() {
-		return 0;
-	}
-
-	protected int getMaxFluidOutputCount() {
-		return 0;
-	}
+	protected boolean canRequireHeat() { return false; }
+	protected boolean canSpecifyDuration() { return false; }
+	protected int getMaxFluidInputCount() { return 0; }
+	protected int getMaxFluidOutputCount() { return 0; }
 
 	public List<String> validate() {
 		List<String> errors = new ArrayList<>();
 		int ingredientCount = ingredients.size();
 		int outputCount = results.size();
-
 		if (ingredientCount > getMaxInputCount())
-			errors.add("Recipe has more item inputs (" + ingredientCount + ") than supported ("
-				+ getMaxInputCount() + ").");
-
+			errors.add("Recipe has more item inputs (" + ingredientCount + ") than supported (" + getMaxInputCount() + ").");
 		if (outputCount > getMaxOutputCount())
-			errors.add("Recipe has more item outputs (" + outputCount + ") than supported ("
-				+ getMaxOutputCount() + ").");
-
+			errors.add("Recipe has more item outputs (" + outputCount + ") than supported (" + getMaxOutputCount() + ").");
 		ingredientCount = fluidIngredients.size();
 		outputCount = fluidResults.size();
-
 		if (ingredientCount > getMaxFluidInputCount())
-			errors.add("Recipe has more fluid inputs (" + ingredientCount + ") than supported ("
-						+ getMaxFluidInputCount() + ").");
-
+			errors.add("Recipe has more fluid inputs (" + ingredientCount + ") than supported (" + getMaxFluidInputCount() + ").");
 		if (outputCount > getMaxFluidOutputCount())
-			errors.add("Recipe has more fluid outputs (" + outputCount + ") than supported ("
-						+ getMaxFluidOutputCount() + ").");
-
+			errors.add("Recipe has more fluid outputs (" + outputCount + ") than supported (" + getMaxFluidOutputCount() + ").");
 		if (processingDuration > 0 && !canSpecifyDuration())
 			errors.add("Recipe specified a duration. Durations have no impact on this type of recipe.");
-
 		if (requiredHeat != HeatCondition.NONE && !canRequireHeat())
 			errors.add("Recipe specified a heat condition. Heat conditions have no impact on this type of recipe.");
-
 		return errors;
 	}
 
-	public P getParams() {
-		return params;
-	}
-
-	@Override
-	public NonNullList<Ingredient> getIngredients() {
-		return ingredients;
-	}
-
-	public NonNullList<SizedFluidIngredient> getFluidIngredients() {
-		return fluidIngredients;
-	}
-
-	public List<ProcessingOutput> getRollableResults() {
-		return results;
-	}
-
-	public NonNullList<FluidStack> getFluidResults() {
-		return fluidResults;
-	}
-
-	public List<ItemStack> getRollableResultsAsItemStacks() {
-		return getRollableResults().stream()
-			.map(ProcessingOutput::getStack)
-			.collect(Collectors.toList());
-	}
-
-	public void enforceNextResult(Supplier<ItemStack> stack) {
-		forcedResult = stack;
-	}
-
-	public List<ItemStack> rollResults(RandomSource randomSource) {
-		return rollResults(this.getRollableResults(), randomSource);
-	}
-
+	public P getParams() { return params; }
+	@Override public NonNullList<Ingredient> getIngredients() { return ingredients; }
+	public NonNullList<SizedFluidIngredient> getFluidIngredients() { return fluidIngredients; }
+	public List<ProcessingOutput> getRollableResults() { return results; }
+	public NonNullList<FluidStack> getFluidResults() { return fluidResults; }
+	public List<ItemStack> getRollableResultsAsItemStacks() { return getRollableResults().stream().map(ProcessingOutput::getStack).collect(Collectors.toList()); }
+	public void enforceNextResult(Supplier<ItemStack> stack) { forcedResult = stack; }
+	public List<ItemStack> rollResults(RandomSource randomSource) { return rollResults(this.getRollableResults(), randomSource); }
 	public List<ItemStack> rollResults(List<ProcessingOutput> rollableResults, RandomSource randomSource) {
 		List<ItemStack> results = new ArrayList<>();
 		for (int i = 0; i < rollableResults.size(); i++) {
 			ProcessingOutput output = rollableResults.get(i);
 			ItemStack stack = i == 0 && forcedResult != null ? forcedResult.get() : output.rollOutput(randomSource);
-			if (!stack.isEmpty())
-				results.add(stack);
+			if (!stack.isEmpty()) results.add(stack);
 		}
 		return results;
 	}
+	public int getProcessingDuration() { return processingDuration; }
+	public HeatCondition getRequiredHeat() { return requiredHeat; }
 
-	public int getProcessingDuration() {
-		return processingDuration;
+	@Override public ItemStack assemble(I t) { return getResultItem(); }
+	@Override public boolean canCraftInDimensions(int width, int height) { return true; }
+	@Override public ItemStack getResultItem() { return getRollableResults().isEmpty() ? ItemStack.EMPTY : getRollableResults().getFirst().getStack(); }
+	@Override public boolean isSpecial() { return true; }
+	@Override public String getGroup() { return "processing"; }
+	@Override public RecipeSerializer<?> getSerializer() { return serializer; }
+	@Override public RecipeType<?> getType() { return type; }
+	public IRecipeTypeInfo getTypeInfo() { return typeInfo; }
+
+	public static <P extends ProcessingRecipeParams, R extends ProcessingRecipe<?, P>> MapCodec<R> codec(Factory<P, R> factory, MapCodec<P> paramsCodec) {
+		return paramsCodec.xmap(factory::create, recipe -> recipe.getParams()).validate(recipe -> {
+			var errors = recipe.validate();
+			if (errors.isEmpty()) return DataResult.success(recipe);
+			errors.add(recipe.getClass().getSimpleName() + " failed validation:");
+			return DataResult.error(() -> Joiner.on('\n').join(errors), recipe);
+		});
 	}
 
-	public HeatCondition getRequiredHeat() {
-		return requiredHeat;
-	}
-
-	// IRecipe<> paperwork
-
-	@Override
-	public ItemStack assemble(I t, HolderLookup.Provider provider) {
-		return getResultItem(provider);
-	}
-
-	@Override
-	public boolean canCraftInDimensions(int width, int height) {
-		return true;
-	}
-
-	@Override
-	public ItemStack getResultItem(HolderLookup.Provider provider) {
-		return getRollableResults().isEmpty() ? ItemStack.EMPTY
-				: getRollableResults().getFirst()
-				.getStack();
-	}
-
-	@Override
-	public boolean isSpecial() {
-		return true;
-	}
-
-	// Processing recipes do not show up in the recipe book
-	@Override
-	public String getGroup() {
-		return "processing";
-	}
-
-	@Override
-	public RecipeSerializer<?> getSerializer() {
-		return serializer;
-	}
-
-	@Override
-	public RecipeType<?> getType() {
-		return type;
-	}
-
-	public IRecipeTypeInfo getTypeInfo() {
-		return typeInfo;
-	}
-
-	public static <P extends ProcessingRecipeParams, R extends ProcessingRecipe<?, P>> MapCodec<R> codec(
-		Factory<P, R> factory, MapCodec<P> paramsCodec
-	) {
-		return paramsCodec.xmap(factory::create, recipe -> recipe.getParams())
-			.validate(recipe -> {
-				var errors = recipe.validate();
-				if (errors.isEmpty())
-					return DataResult.success(recipe);
-				errors.add(recipe.getClass().getSimpleName() + " failed validation:");
-				return DataResult.error(() -> Joiner.on('\n').join(errors), recipe);
-			});
-	}
-
-	public static <P extends ProcessingRecipeParams, R extends ProcessingRecipe<?, P>> StreamCodec<RegistryFriendlyByteBuf, R> streamCodec(
-		Factory<P, R> factory, StreamCodec<RegistryFriendlyByteBuf, P> streamCodec
-	) {
+	public static <P extends ProcessingRecipeParams, R extends ProcessingRecipe<?, P>> StreamCodec<RegistryFriendlyByteBuf, R> streamCodec(Factory<P, R> factory, StreamCodec<RegistryFriendlyByteBuf, P> streamCodec) {
 		return streamCodec.map(factory::create, ProcessingRecipe::getParams);
 	}
 
 	@FunctionalInterface
-	public interface Factory<P extends ProcessingRecipeParams, R extends ProcessingRecipe<?, P>> {
-		R create(P params);
-	}
+	public interface Factory<P extends ProcessingRecipeParams, R extends ProcessingRecipe<?, P>> { R create(P params); }
 }
