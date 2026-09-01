@@ -6,13 +6,13 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.AllRecipeTypes;
+import com.simibubi.create.foundation.mixin.accessor.ShapedRecipeAccessor;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStackTemplate;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -37,7 +37,7 @@ public class MechanicalCraftingRecipe extends ShapedRecipe {
 		return new MechanicalCraftingRecipe(
 				new Recipe.CommonInfo(recipe.showNotification()),
 				new CraftingRecipe.CraftingBookInfo(recipe.category(), recipe.group()),
-				recipe.pattern, result, acceptMirrored);
+				((ShapedRecipeAccessor) recipe).create$getPattern(), result, acceptMirrored);
 	}
 
 	@Override
