@@ -93,7 +93,7 @@ public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 	@Override public Identifier getId() { return id; }
 	@SuppressWarnings("unchecked") @Override public <T extends RecipeSerializer<?>> T getSerializer() { return (T) serializerObject.get(); }
 	@SuppressWarnings("unchecked") @Override public <I extends RecipeInput, R extends Recipe<I>> RecipeType<R> getType() { return (RecipeType<R>) type.get(); }
-	public <I extends RecipeInput, R extends Recipe<I>> Optional<RecipeHolder<R>> find(I inv, Level world) { return world.getRecipeManager().getRecipeFor(getType(), inv, world); }
+	public <I extends RecipeInput, R extends Recipe<I>> Optional<RecipeHolder<R>> find(I inv, Level world) { return world.recipeAccess().getRecipeFor(getType(), inv, world); }
 	public static boolean shouldIgnoreInAutomation(RecipeHolder<?> recipe) {
 		RecipeSerializer<?> serializer = recipe.value().getSerializer();
 		if (serializer != null && AllTags.AllRecipeSerializerTags.AUTOMATION_IGNORE.matches(serializer)) return true;
