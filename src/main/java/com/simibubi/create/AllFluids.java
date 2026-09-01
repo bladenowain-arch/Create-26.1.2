@@ -20,7 +20,7 @@ import com.simibubi.create.infrastructure.config.AllConfigs;
 import com.tterrag.registrate.builders.FluidBuilder.FluidTypeFactory;
 import com.tterrag.registrate.util.entry.FluidEntry;
 
-import net.createmod.catnip.theme.Color;
+import net.createmod.catnip.lang.Lang;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer.FogMode;
@@ -28,7 +28,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.DispensibleContainerItem;
 import net.minecraft.world.item.ItemStack;
@@ -180,10 +180,10 @@ public class AllFluids {
 	public static abstract class TintedFluidType extends FluidType {
 
 		protected static final int NO_TINT = 0xffffffff;
-		private final ResourceLocation stillTexture;
-		private final ResourceLocation flowingTexture;
+		private final Identifier stillTexture;
+		private final Identifier flowingTexture;
 
-		public TintedFluidType(Properties properties, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
+		public TintedFluidType(Properties properties, Identifier stillTexture, Identifier flowingTexture) {
 			super(properties);
 			this.stillTexture = stillTexture;
 			this.flowingTexture = flowingTexture;
@@ -194,12 +194,12 @@ public class AllFluids {
 			consumer.accept(new IClientFluidTypeExtensions() {
 
 				@Override
-				public ResourceLocation getStillTexture() {
+				public Identifier getStillTexture() {
 					return stillTexture;
 				}
 
 				@Override
-				public ResourceLocation getFlowingTexture() {
+				public Identifier getFlowingTexture() {
 					return flowingTexture;
 				}
 
@@ -263,8 +263,8 @@ public class AllFluids {
 			};
 		}
 
-		private SolidRenderedPlaceableFluidType(Properties properties, ResourceLocation stillTexture,
-												ResourceLocation flowingTexture) {
+		private SolidRenderedPlaceableFluidType(Properties properties, Identifier stillTexture,
+												Identifier flowingTexture) {
 			super(properties, stillTexture, flowingTexture);
 		}
 
