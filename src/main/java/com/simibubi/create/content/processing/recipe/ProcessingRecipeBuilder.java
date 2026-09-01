@@ -12,8 +12,10 @@ import com.simibubi.create.foundation.fluid.FluidHelper;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -59,7 +61,8 @@ public abstract class ProcessingRecipeBuilder<P extends ProcessingRecipeParams, 
 		Identifier id = recipeId.withPath(path -> typeId.path() + "/" + path);
 		var errors = recipe.validate();
 		if (!errors.isEmpty()) { errors.add(recipe.getClass().getSimpleName() + " with id " + id + " failed validation:"); Create.LOGGER.warn(Joiner.on('\n').join(errors)); }
-		consumer.accept(id, recipe, null, recipeConditions.toArray(new ICondition[0]));
+		ResourceKey<net.minecraft.world.item.crafting.Recipe<?>> key = ResourceKey.create(Registries.RECIPE, id);
+		consumer.accept(key, recipe, null, recipeConditions.toArray(new ICondition[0]));
 	}
 
 	public S require(TagKey<Item> tag) { return require(Ingredient.of(tag)); }
