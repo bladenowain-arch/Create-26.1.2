@@ -156,3 +156,135 @@ dependencies {
     compileOnly("xaero.lib:xaerolib-neoforge-1.21:1.0.42")
     compileOnly("curse.maven:xaeros-world-map-317780:7401095")
 }
+
+sourceSets.main {
+    java {
+        if (!cc_tweaked_enable.toBoolean()) {
+            exclude("com/simibubi/create/compat/computercraft/implementation/**")
+        }
+    }
+
+    resources {
+        srcDir("src/generated/resources")
+        exclude(".cache/")
+        exclude("data/create/.wiki")
+    }
+
+    blossom.javaSources {
+        property("version", mod_version)
+        property("gitCommit", gitHash.toString())
+    }
+}
+
+jar {
+    from("LICENSE.md") {
+        rename { "${mod_name}_${it}" }
+    }
+}
+
+tasks.withType(Jar).configureEach {
+    manifest.attributes([
+        "Git-Hash": gitHash
+    ])
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+}
+
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [
+        "mod_version"           : mod_version,
+        "mod_id"                : mod_id,
+        "mod_name"              : mod_name,
+        "mod_author"            : mod_author,
+        "mod_description"       : mod_description,
+        "mod_license"           : mod_license,
+        "neo_version"           : neo_version,
+        "minecraft_version"     : minecraft_version,
+        "ponder_version"        : ponder_version,
+        "flywheel_version_range": flywheel_version_range,
+    ]
+    inputs.properties(replaceProperties)
+    expand(replaceProperties)
+    from("src/main/templates")
+    into("build/generated/sources/modMetadata")
+}
+
+sourceSets.main.resources.srcDir(generateModMetadata)
+neoForge.ideSyncTask(generateModMetadata)
+
+publishing {
+    publications {
+        register("mavenJava", MavenPublication) {
+            from(components.java)
+        }
+    }
+
+    repositories {
+        maven {
+            url = "https://maven.createmod.net"
+            credentials {
+                username = providers.environmentVariable("MAVEN_USERNAME").orNull
+                password = providers.environmentVariable("MAVEN_PASSWORD").orNull
+            }
+        }
+    }
+}
+
+publishMods {
+    file = jar.archiveFile
+    changelog = silk.changelog
+    type = STABLE
+    version = "$mod_version+mc$minecraft_version"
+    displayName = "$mod_name $mod_version for mc$minecraft_version"
+    modLoaders.add("neoforge")
+
+    curseforge {
+        accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
+        projectId = "328085"
+        minecraftVersions.add(minecraft_version)
+    }
+
+    modrinth {
+        accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+        projectId = "LNytGWDc"
+        minecraftVersions.add(minecraft_version)
+    }
+
+    github {
+        accessToken = providers.environmentVariable("GITHUB_TOKEN")
+        repository = "Creators-of-Create/Create"
+        commitish = gitHash
+        tagName = "mc$minecraft_version-$mod_version"
+        file.unset()
+        file.unsetConvention()
+
+        allowEmptyFiles = true
+    }
+}
+
+String calculateGitHash() {
+    try {
+        ExecOutput output = providers.exec {
+            commandLine("git", "rev-parse", "HEAD")
+        }
+        return output.standardOutput.asText.get().trim()
+    } catch (Throwable ignored) {
+        return "unknown"
+    }
+}
+
+boolean hasUnstaged() {
+    try {
+        ExecOutput output = providers.exec {
+            commandLine("git", "status", "--porcelain")
+        }
+        String result = output.standardOutput.asText.get().replace("/M gradlew(\\.bat)?/", "").trim()
+        if (!result.isEmpty())
+            println("Found stageable results:\n ${result}\n")
+        return !result.isEmpty()
+    } catch (Throwable ignored) {
+        return false
+    }
+}
