@@ -46,7 +46,7 @@ public class FillingBySpout {
 				return requiredFluid.amount();
 		}
 
-		for (RecipeHolder<Recipe<SingleRecipeInput>> recipe : world.getRecipeManager()
+		for (RecipeHolder<Recipe<SingleRecipeInput>> recipe : world.recipeAccess()
 			.getRecipesFor(AllRecipeTypes.FILLING.getType(), input, world)) {
 			FillingRecipe fillingRecipe = (FillingRecipe) recipe.value();
 			SizedFluidIngredient requiredFluid = fillingRecipe.getRequiredFluid();
@@ -68,7 +68,7 @@ public class FillingBySpout {
 			.filter(fr -> fr.value().getRequiredFluid()
 					.test(toFill))
 				.orElseGet(() -> {
-					for (RecipeHolder<Recipe<SingleRecipeInput>> recipe : level.getRecipeManager()
+					for (RecipeHolder<Recipe<SingleRecipeInput>> recipe : level.recipeAccess()
 						.getRecipesFor(AllRecipeTypes.FILLING.getType(), input, level)) {
 						FillingRecipe fr = (FillingRecipe) recipe.value();
 						SizedFluidIngredient requiredFluid = fr.getRequiredFluid();
@@ -79,7 +79,7 @@ public class FillingBySpout {
 				});
 
 		if (fillingRecipe != null) {
-			List<ItemStack> results = fillingRecipe.value().rollResults(level.random);
+			List<ItemStack> results = fillingRecipe.value().rollResults(level.getRandom());
 			availableFluid.shrink(requiredAmount);
 			stack.shrink(1);
 			return results.isEmpty() ? ItemStack.EMPTY : results.get(0);
