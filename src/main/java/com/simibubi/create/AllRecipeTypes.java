@@ -56,7 +56,7 @@ public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 	DEPLOYING(DeployerApplicationRecipe::new), FILLING(FillingRecipe::new), EMPTYING(EmptyingRecipe::new),
 	ITEM_APPLICATION(ManualApplicationRecipe::new),
 	MECHANICAL_CRAFTING(() -> new StandardProcessingRecipe.Serializer<MechanicalCraftingRecipe>(MechanicalCraftingRecipe::new).serializer()),
-	SEQUENCED_ASSEMBLY(SequencedAssemblyRecipeSerializer::new),
+	SEQUENCED_ASSEMBLY(() -> new SequencedAssemblyRecipeSerializer().serializer()),
 	TOOLBOX_DYEING(() -> new SimpleCraftingRecipeSerializer<>(ToolboxDyeingRecipe::new), () -> RecipeType.CRAFTING, false),
 	ITEM_COPYING(() -> new SimpleCraftingRecipeSerializer<>(ItemCopyingRecipe::new), () -> RecipeType.CRAFTING, false);
 
