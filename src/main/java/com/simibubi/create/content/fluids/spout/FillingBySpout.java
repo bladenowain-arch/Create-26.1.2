@@ -46,7 +46,7 @@ public class FillingBySpout {
 				return requiredFluid.amount();
 		}
 
-		for (RecipeHolder<Recipe<SingleRecipeInput>> recipe : world.recipeAccess()
+		for (RecipeHolder<Recipe<SingleRecipeInput>> recipe : world.recipeAccess().recipeMap()
 			.getRecipesFor(AllRecipeTypes.FILLING.getType(), input, world)) {
 			FillingRecipe fillingRecipe = (FillingRecipe) recipe.value();
 			SizedFluidIngredient requiredFluid = fillingRecipe.getRequiredFluid();
@@ -68,7 +68,7 @@ public class FillingBySpout {
 			.filter(fr -> fr.value().getRequiredFluid()
 					.test(toFill))
 				.orElseGet(() -> {
-					for (RecipeHolder<Recipe<SingleRecipeInput>> recipe : level.recipeAccess()
+					for (RecipeHolder<Recipe<SingleRecipeInput>> recipe : level.recipeAccess().recipeMap()
 						.getRecipesFor(AllRecipeTypes.FILLING.getType(), input, level)) {
 						FillingRecipe fr = (FillingRecipe) recipe.value();
 						SizedFluidIngredient requiredFluid = fr.getRequiredFluid();
