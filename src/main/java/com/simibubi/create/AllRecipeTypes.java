@@ -88,7 +88,9 @@ public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 		this(() -> new ItemApplicationRecipe.Serializer<>(itemApplicationFactory).serializer()); isProcessingRecipe = true;
 	}
 	@Internal public static void register(IEventBus modEventBus) {
-		ShapedRecipePattern.setCraftingSize(9, 9); Registers.SERIALIZER_REGISTER.register(modEventBus); Registers.TYPE_REGISTER.register(modEventBus);
+		Registers.SERIALIZER_REGISTER.register(modEventBus); Registers.TYPE_REGISTER.register(modEventBus);
+		modEventBus.addListener((net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent event) ->
+			event.enqueueWork(() -> ShapedRecipePattern.setCraftingSize(9, 9)));
 	}
 	@Override public Identifier getId() { return id; }
 	@SuppressWarnings("unchecked") @Override public <T extends RecipeSerializer<?>> T getSerializer() { return (T) serializerObject.get(); }
