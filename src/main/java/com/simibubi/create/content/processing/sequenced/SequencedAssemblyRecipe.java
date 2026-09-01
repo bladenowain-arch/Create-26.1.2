@@ -23,6 +23,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -51,19 +52,19 @@ public class SequencedAssemblyRecipe implements Recipe<RecipeWrapper> {
 	}
 
 	public static <I extends RecipeInput, R extends ProcessingRecipe<I, ?>> Optional<RecipeHolder<R>> getRecipe(Level world, I inv,
-																												RecipeType<R> type, Class<R> recipeClass) {
+		RecipeType<R> type, Class<R> recipeClass) {
 		return getRecipe(world, inv, type, recipeClass, r -> r.value().matches(inv, world));
 	}
 
 	public static <I extends RecipeInput, R extends ProcessingRecipe<I, ?>> Optional<RecipeHolder<R>> getRecipe(Level world, I inv,
-																												RecipeType<R> type, Class<R> recipeClass, Predicate<? super RecipeHolder<R>> recipeFilter) {
+		RecipeType<R> type, Class<R> recipeClass, Predicate<? super RecipeHolder<R>> recipeFilter) {
 		List<RecipeHolder<R>> list = getRecipes(world, inv.getItem(0), type, recipeClass, recipeFilter);
 		return list.isEmpty() ? Optional.empty() : Optional.of(list.getFirst());
 	}
 
 	public static <R extends ProcessingRecipe<?, ?>> Optional<RecipeHolder<R>> getRecipe(Level level, ItemStack item,
-																		 RecipeType<R> type, Class<R> recipeClass) {
-		List<RecipeHolder<SequencedAssemblyRecipe>> all = level.getRecipeManager()
+		RecipeType<R> type, Class<R> recipeClass) {
+		List<RecipeHolder<SequencedAssemblyRecipe>> all = level.recipeAccess()
 			.getAllRecipesFor(AllRecipeTypes.SEQUENCED_ASSEMBLY.getType());
 		for (RecipeHolder<SequencedAssemblyRecipe> holder : all) {
 			if (!holder.value().appliesTo(holder.id(), item))
@@ -79,7 +80,7 @@ public class SequencedAssemblyRecipe implements Recipe<RecipeWrapper> {
 	}
 
 	public static <R extends ProcessingRecipe<?, ?>> List<RecipeHolder<R>> getRecipes(Level level, ItemStack item, RecipeType<R> type, Class<R> recipeClass, Predicate<? super RecipeHolder<R>> recipeFilter) {
-		List<RecipeHolder<SequencedAssemblyRecipe>> all = level.getRecipeManager()
+		List<RecipeHolder<SequencedAssemblyRecipe>> all = level.recipeAccess()
 			.getAllRecipesFor(AllRecipeTypes.SEQUENCED_ASSEMBLY.getType());
 		List<RecipeHolder<R>> result = new ArrayList<>();
 		for (RecipeHolder<SequencedAssemblyRecipe> holder : all) {
@@ -143,7 +144,7 @@ public class SequencedAssemblyRecipe implements Recipe<RecipeWrapper> {
 	@Override public boolean matches(RecipeWrapper inv, Level level) { return false; }
 	@Override public ItemStack assemble(RecipeWrapper input) { return ItemStack.EMPTY; }
 	@Override public boolean canCraftInDimensions(int width, int height) { return false; }
-	@Override public ItemStack getResultItem() { return resultPool.getFirst().getStack(); }
+	@Override public ItemStackTemplate getResultItem() { return ItemStackTemplate.fromNonEmptyStack(resultPool.getFirst().getStack()); }
 	@Override public RecipeSerializer<?> getSerializer() { return AllRecipeTypes.SEQUENCED_ASSEMBLY.getSerializer(); }
 	@Override public boolean isSpecial() { return true; }
 	@Override public RecipeType<?> getType() { return AllRecipeTypes.SEQUENCED_ASSEMBLY.getType(); }
@@ -153,7 +154,7 @@ public class SequencedAssemblyRecipe implements Recipe<RecipeWrapper> {
 		ItemStack stack = event.getItemStack();
 		if (!stack.has(AllDataComponents.SEQUENCED_ASSEMBLY)) return;
 		SequencedAssembly sequencedAssembly = stack.get(AllDataComponents.SEQUENCED_ASSEMBLY);
-		Optional<RecipeHolder<?>> optionalRecipe = Minecraft.getInstance().level.getRecipeManager().byKey(sequencedAssembly.id());
+		Optional<RecipeHolder<?>> optionalRecipe = Minecraft.getInstance().level.recipeAccess().byKey(sequencedAssembly.id());
 		if (optionalRecipe.isEmpty()) return;
 		Recipe<?> recipe = optionalRecipe.get().value();
 		if (!(recipe instanceof SequencedAssemblyRecipe sequencedAssemblyRecipe)) return;
