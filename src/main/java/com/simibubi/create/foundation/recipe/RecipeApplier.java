@@ -59,8 +59,7 @@ public class RecipeApplier {
 
 			}
 		} else {
-			ItemStack out = recipe.getResultItem(level.registryAccess())
-				.copy();
+			ItemStack out = recipe.getResultItem().copy();
 			stacks = ItemHelper.multipliedOutput(stackIn, out);
 		}
 
