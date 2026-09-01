@@ -64,8 +64,10 @@ public class SequencedAssemblyRecipe implements Recipe<RecipeWrapper> {
 
 	public static <R extends ProcessingRecipe<?, ?>> Optional<RecipeHolder<R>> getRecipe(Level level, ItemStack item,
 		RecipeType<R> type, Class<R> recipeClass) {
-		List<RecipeHolder<SequencedAssemblyRecipe>> all = level.recipeAccess()
-			.getAllRecipesFor(AllRecipeTypes.SEQUENCED_ASSEMBLY.getType());
+		List<RecipeHolder<SequencedAssemblyRecipe>> all = level.recipeAccess().recipeMap()
+			.byType(AllRecipeTypes.SEQUENCED_ASSEMBLY.getType()).stream()
+			.map(holder -> (RecipeHolder<SequencedAssemblyRecipe>) holder)
+			.toList();
 		for (RecipeHolder<SequencedAssemblyRecipe> holder : all) {
 			if (!holder.value().appliesTo(holder.id(), item))
 				continue;
@@ -80,8 +82,10 @@ public class SequencedAssemblyRecipe implements Recipe<RecipeWrapper> {
 	}
 
 	public static <R extends ProcessingRecipe<?, ?>> List<RecipeHolder<R>> getRecipes(Level level, ItemStack item, RecipeType<R> type, Class<R> recipeClass, Predicate<? super RecipeHolder<R>> recipeFilter) {
-		List<RecipeHolder<SequencedAssemblyRecipe>> all = level.recipeAccess()
-			.getAllRecipesFor(AllRecipeTypes.SEQUENCED_ASSEMBLY.getType());
+		List<RecipeHolder<SequencedAssemblyRecipe>> all = level.recipeAccess().recipeMap()
+			.byType(AllRecipeTypes.SEQUENCED_ASSEMBLY.getType()).stream()
+			.map(holder -> (RecipeHolder<SequencedAssemblyRecipe>) holder)
+			.toList();
 		List<RecipeHolder<R>> result = new ArrayList<>();
 		for (RecipeHolder<SequencedAssemblyRecipe> holder : all) {
 			if (!holder.value().appliesTo(holder.id(), item))
