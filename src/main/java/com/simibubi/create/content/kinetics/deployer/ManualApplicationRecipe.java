@@ -12,7 +12,7 @@ import com.simibubi.create.foundation.utility.BlockHelper;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -53,7 +53,7 @@ public class ManualApplicationRecipe extends ItemApplicationRecipe {
 			return;
 
 		RecipeType<Recipe<RecipeWrapper>> type = AllRecipeTypes.ITEM_APPLICATION.getType();
-		Optional<RecipeHolder<Recipe<RecipeWrapper>>> foundRecipe = level.getRecipeManager()
+		Optional<RecipeHolder<Recipe<RecipeWrapper>>> foundRecipe = level.recipeAccess()
 			.getAllRecipesFor(type)
 			.stream()
 			.filter(r -> {
@@ -76,9 +76,9 @@ public class ManualApplicationRecipe extends ItemApplicationRecipe {
 		ManualApplicationRecipe recipe = (ManualApplicationRecipe) foundRecipe.get().value();
 		level.destroyBlock(pos, false);
 
-		BlockState transformedBlock = recipe.transformBlock(blockState, level.random);
+		BlockState transformedBlock = recipe.transformBlock(blockState, level.getRandom());
 		level.setBlock(pos, transformedBlock, Block.UPDATE_ALL);
-		recipe.rollResults(level.random)
+		recipe.rollResults(level.getRandom())
 			.forEach(stack -> Block.popResource(level, pos, stack));
 
 		boolean creative = event.getEntity() != null && event.getEntity()
@@ -92,7 +92,7 @@ public class ManualApplicationRecipe extends ItemApplicationRecipe {
 			} else {
 				Player player = event.getEntity();
 				InteractionHand hand = event.getHand();
-				ItemStack leftover = heldItem.getCraftingRemainingItem();
+				ItemStack leftover = heldItem.getCraftingRemainingItem().create();
 				heldItem.shrink(1);
 				if (heldItem.isEmpty()) {
 					player.setItemInHand(hand, leftover);
@@ -130,7 +130,7 @@ public class ManualApplicationRecipe extends ItemApplicationRecipe {
 
 	public static RecipeHolder<DeployerApplicationRecipe> asDeploying(RecipeHolder<?> recipe) {
 		ManualApplicationRecipe mar = (ManualApplicationRecipe) recipe.value();
-		ResourceLocation id = AllRecipeTypes.CAN_BE_AUTOMATED.test(recipe) ?
+		Identifier id = AllRecipeTypes.CAN_BE_AUTOMATED.test(recipe) ?
 			recipe.id().withSuffix("_using_deployer") : recipe.id();
 		ItemApplicationRecipe.Builder<DeployerApplicationRecipe> builder =
 			new ItemApplicationRecipe.Builder<>(DeployerApplicationRecipe::new, id)
