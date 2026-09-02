@@ -24,9 +24,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -91,13 +95,14 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 	 * Hook only these in future subclasses of STE
 	 */
 	protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
-		super.saveAdditional(tag, registries);
 		forEachBehaviour(tb -> tb.write(tag, registries, clientPacket));
 	}
 
 	@Override
 	public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
-		super.saveAdditional(tag, registries);
+		TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, registries);
+		super.saveAdditional(output);
+		tag.merge(output.buildResult());
 		forEachBehaviour(tb -> {
 			if (tb.isSafeNBT())
 				tb.writeSafe(tag, registries);
@@ -115,13 +120,13 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 			list.forEach(b -> behaviours.put(b.getType(), b));
 			NeoForge.EVENT_BUS.post(new BlockEntityBehaviourEvent(this, behaviours));
 		}
-		super.loadAdditional(tag, registries);
 		forEachBehaviour(tb -> tb.read(tag, registries, clientPacket));
 	}
 
 	@Override
-	protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-		read(tag, registries, false);
+	protected void loadAdditional(@NotNull ValueInput input) {
+		super.loadAdditional(input);
+		read(input.read(CompoundTag.CODEC).orElseGet(CompoundTag::new), input.lookup(), false);
 	}
 
 	@Override
@@ -164,13 +169,16 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 	}
 
 	@Override
-	public final void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		write(tag, registries, false);
+	protected final void saveAdditional(ValueOutput output) {
+		super.saveAdditional(output);
+		CompoundTag tag = new CompoundTag();
+		write(tag, output instanceof net.minecraft.world.level.storage.TagValueOutput ? output : null == null ? null : output.lookup(), false);
+		output.store(tag);
 	}
 
 	@Override
-	public final void readClient(CompoundTag tag, HolderLookup.Provider registries) {
-		read(tag, registries, true);
+	public final void readClient(ValueInput input) {
+		read(input.read(CompoundTag.CODEC).orElseGet(CompoundTag::new), input.lookup(), true);
 	}
 
 	@Override
