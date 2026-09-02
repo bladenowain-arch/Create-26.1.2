@@ -141,10 +141,11 @@ public class AllFluids {
 		@Override
 		public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
 			consumer.accept(new IClientFluidTypeExtensions() {
-				@Override public void modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, org.joml.Vector4f fluidFogColor) {
+				@Override public org.joml.Vector4f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, org.joml.Vector4f fluidFogColor) {
 					Vector3f customFogColor = TintedFluidType.this.getCustomFogColor();
 					if (customFogColor != null)
 						fluidFogColor.set(customFogColor.x(), customFogColor.y(), customFogColor.z(), 1f);
+					return fluidFogColor;
 				}
 
 				@Override public void modifyFogRender(Camera camera, FogEnvironment environment, float renderDistance, float partialTick, FogData fogData) {
