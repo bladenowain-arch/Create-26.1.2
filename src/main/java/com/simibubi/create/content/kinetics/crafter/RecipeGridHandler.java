@@ -193,13 +193,14 @@ public class RecipeGridHandler {
 
 		public void write(CompoundTag nbt, HolderLookup.Provider registries) {
 			ListTag gridNBT = new ListTag();
-			grid.forEach((pair, stack) -> {
-				CompoundTag entry = new CompoundTag();
-				entry.putInt("x", pair.getKey());
-				entry.putInt("y", pair.getValue());
-				entry.put("item", stack.saveOptional(registries));
-				gridNBT.add(entry);
-			});
+			grid.forEach(
+				(pair, stack) -> {
+					CompoundTag entry = new CompoundTag();
+					entry.putInt("x", pair.getKey());
+					entry.putInt("y", pair.getValue());
+					entry.put("item", stack.saveOptional(registries));
+					gridNBT.add(entry);
+				});
 			nbt.put("Grid", gridNBT);
 		}
 
