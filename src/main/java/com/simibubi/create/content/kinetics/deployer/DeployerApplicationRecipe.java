@@ -11,7 +11,6 @@ import com.simibubi.create.compat.jei.category.sequencedAssembly.SequencedAssemb
 import com.simibubi.create.content.processing.sequenced.IAssemblyRecipe;
 import com.simibubi.create.foundation.utility.CreateLang;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -38,8 +37,8 @@ public class DeployerApplicationRecipe extends ItemApplicationRecipe implements 
 
 	public static RecipeHolder<DeployerApplicationRecipe> convert(RecipeHolder<?> sandpaperRecipe) {
 		Identifier id = Identifier.fromNamespaceAndPath(
-				sandpaperRecipe.id().identifier().getNamespace(),
-				sandpaperRecipe.id().identifier().getPath() + "_using_deployer"
+			sandpaperRecipe.id().identifier().getNamespace(),
+			sandpaperRecipe.id().identifier().getPath() + "_using_deployer"
 		);
 		ResourceKey<Recipe<?>> recipeKey = ResourceKey.create(Registries.RECIPE, id);
 		DeployerApplicationRecipe recipe = new ItemApplicationRecipe.Builder<>(DeployerApplicationRecipe::new, id)
