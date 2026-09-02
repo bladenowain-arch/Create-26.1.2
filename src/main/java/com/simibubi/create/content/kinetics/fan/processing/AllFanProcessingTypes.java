@@ -333,7 +333,7 @@ public class AllFanProcessingTypes {
 
 		@Override
 		public boolean canProcess(ItemStack stack, Level level) {
-			return AllRecipeTypes.HAUNTING.find(new SingleRecipeInput(stack), level).isPresent();
+			return AllRecipeTypes.SMOKING.find(new SingleRecipeInput(stack), level).isPresent();
 		}
 
 		@Override
