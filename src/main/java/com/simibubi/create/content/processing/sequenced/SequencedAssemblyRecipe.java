@@ -152,7 +152,7 @@ public class SequencedAssemblyRecipe implements Recipe<RecipeWrapper> {
 	@Override public boolean matches(RecipeWrapper inv, Level level) { return false; }
 	@Override public ItemStack assemble(RecipeWrapper input) { return ItemStack.EMPTY; }
 	@Override public boolean canCraftInDimensions(int width, int height) { return false; }
-	@Override public ItemStackTemplate getResultItem() { return ItemStackTemplate.fromNonEmptyStack(resultPool.getFirst().getStack()); }
+	@Override public ItemStackTemplate getResultItem() { return resultPool.getFirst().getTemplate(); }
 	@Override public RecipeSerializer<?> getSerializer() { return AllRecipeTypes.SEQUENCED_ASSEMBLY.getSerializer(); }
 	@Override public boolean isSpecial() { return true; }
 	@Override public RecipeType<?> getType() { return AllRecipeTypes.SEQUENCED_ASSEMBLY.getType(); }
