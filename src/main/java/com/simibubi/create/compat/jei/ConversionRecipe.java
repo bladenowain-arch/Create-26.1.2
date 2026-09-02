@@ -7,9 +7,12 @@ import com.simibubi.create.Create;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeParams;
 import com.simibubi.create.content.processing.recipe.StandardProcessingRecipe;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 
@@ -25,11 +28,12 @@ public class ConversionRecipe extends StandardProcessingRecipe<RecipeWrapper> {
 
 	public static RecipeHolder<ConversionRecipe> create(ItemStack from, ItemStack to) {
 		Identifier recipeId = Create.asResource("conversion_" + counter++);
+		ResourceKey<Recipe<?>> recipeKey = ResourceKey.create(Registries.RECIPE, recipeId);
 		ConversionRecipe recipe = new Builder<>(ConversionRecipe::new, recipeId)
 			.withItemIngredients(Ingredient.of(from))
 			.withSingleItemOutput(to)
 			.build();
-		return new RecipeHolder<>(recipeId, recipe);
+		return new RecipeHolder<>(recipeKey, recipe);
 	}
 
 	public ConversionRecipe(ProcessingRecipeParams params) {
