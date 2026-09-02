@@ -3,12 +3,8 @@ package com.simibubi.create;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
-import com.mojang.blaze3d.shaders.FogShape;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.AllTags.AllFluidTags;
 import com.simibubi.create.AllTags.AllItemTags;
 import com.simibubi.create.content.decoration.palettes.AllPaletteStoneTypes;
@@ -24,7 +20,8 @@ import net.createmod.catnip.lang.Lang;
 import net.createmod.catnip.theme.Color;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.FogRenderer.FogMode;
+import net.minecraft.client.renderer.fog.FogData;
+import net.minecraft.client.renderer.fog.environment.FogEnvironment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
@@ -34,7 +31,6 @@ import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.DispensibleContainerItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -114,7 +110,7 @@ public class AllFluids {
 			fluidState -> fluidState.isSource() ? Blocks.OBSIDIAN.defaultBlockState() : AllPaletteStoneTypes.SCORIA.getBaseBlock().get().defaultBlockState()));
 	}
 
-	@Nullable
+	@org.jetbrains.annotations.Nullable
 	public static BlockState getLavaInteraction(FluidState fluidState) {
 		Fluid fluid = fluidState.getType();
 		if (fluid.isSame(HONEY.get())) return AllPaletteStoneTypes.LIMESTONE.getBaseBlock().get().defaultBlockState();
@@ -152,27 +148,24 @@ public class AllFluids {
 		@Override
 		public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
 			consumer.accept(new IClientFluidTypeExtensions() {
-				@Override public Identifier getStillTexture() { return stillTexture; }
-				@Override public Identifier getFlowingTexture() { return flowingTexture; }
-				@Override public int getTintColor(FluidStack stack) { return TintedFluidType.this.getTintColor(stack); }
-				@Override public int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos) { return TintedFluidType.this.getTintColor(state, getter, pos); }
-				@Override public @NotNull Vector3f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector3f fluidFogColor) {
+				@Override public void modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, org.joml.Vector4f fluidFogColor) {
 					Vector3f customFogColor = TintedFluidType.this.getCustomFogColor();
-					return customFogColor == null ? fluidFogColor : customFogColor;
+					if (customFogColor != null)
+						fluidFogColor.set(customFogColor.x(), customFogColor.y(), customFogColor.z(), 1f);
 				}
-				@Override public void modifyFogRender(Camera camera, FogMode mode, float renderDistance, float partialTick, float nearDistance, float farDistance, FogShape shape) {
+
+				@Override public void modifyFogRender(Camera camera, FogEnvironment environment, float renderDistance, float partialTick, FogData fogData) {
 					float modifier = TintedFluidType.this.getFogDistanceModifier();
 					if (modifier != 1f) {
-						RenderSystem.setShaderFogShape(FogShape.CYLINDER);
-						RenderSystem.setShaderFogStart(-8);
-						RenderSystem.setShaderFogEnd(96.0f * modifier);
+						fogData.environmentalStart = -8f;
+						fogData.environmentalEnd = 96.0f * modifier;
 					}
 				}
 			});
 		}
 
 		protected abstract int getTintColor(FluidStack stack);
-		protected abstract int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos);
+		protected abstract int getTintColor(FluidState state, net.minecraft.world.level.BlockAndTintGetter getter, BlockPos pos);
 		protected Vector3f getCustomFogColor() { return null; }
 		protected float getFogDistanceModifier() { return 1f; }
 	}
@@ -195,7 +188,7 @@ public class AllFluids {
 		}
 
 		@Override protected int getTintColor(FluidStack stack) { return NO_TINT; }
-		@Override protected int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos) { return NO_TINT; }
+		@Override protected int getTintColor(FluidState state, net.minecraft.world.level.BlockAndTintGetter getter, BlockPos pos) { return NO_TINT; }
 		@Override protected Vector3f getCustomFogColor() { return fogColor; }
 		@Override protected float getFogDistanceModifier() { return fogDistance.get(); }
 	}
