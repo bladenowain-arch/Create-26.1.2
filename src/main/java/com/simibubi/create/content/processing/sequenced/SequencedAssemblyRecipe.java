@@ -16,11 +16,13 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -69,13 +71,14 @@ public class SequencedAssemblyRecipe implements Recipe<RecipeWrapper> {
 			.map(holder -> (RecipeHolder<SequencedAssemblyRecipe>) holder)
 			.toList();
 		for (RecipeHolder<SequencedAssemblyRecipe> holder : all) {
-			if (!holder.value().appliesTo(holder.id(), item))
+			Identifier id = holder.id().identifier();
+			if (!holder.value().appliesTo(id, item))
 				continue;
 			SequencedRecipe<?> nextRecipe = holder.value().getNextRecipe(item);
 			ProcessingRecipe<?, ?> recipe = nextRecipe.getRecipe();
 			if (recipe.getType() != type || !recipeClass.isInstance(recipe))
 				continue;
-			recipe.enforceNextResult(() -> holder.value().advance(holder.id(), item, level.getRandom()));
+			recipe.enforceNextResult(() -> holder.value().advance(id, item, level.getRandom()));
 			return Optional.of(new RecipeHolder<>(holder.id(), recipeClass.cast(recipe)));
 		}
 		return Optional.empty();
@@ -88,11 +91,12 @@ public class SequencedAssemblyRecipe implements Recipe<RecipeWrapper> {
 			.toList();
 		List<RecipeHolder<R>> result = new ArrayList<>();
 		for (RecipeHolder<SequencedAssemblyRecipe> holder : all) {
-			if (!holder.value().appliesTo(holder.id(), item))
+			Identifier id = holder.id().identifier();
+			if (!holder.value().appliesTo(id, item))
 				continue;
 			ProcessingRecipe<?, ?> recipe = holder.value().getNextRecipe(item).getRecipe();
 			if (recipe.getType() == type && recipeClass.isInstance(recipe)) {
-				recipe.enforceNextResult(() -> holder.value().advance(holder.id(), item, level.getRandom()));
+				recipe.enforceNextResult(() -> holder.value().advance(id, item, level.getRandom()));
 				R castedRecipe = recipeClass.cast(recipe);
 				RecipeHolder<R> h = new RecipeHolder<>(holder.id(), castedRecipe);
 				if (recipeFilter.test(h))
@@ -158,7 +162,8 @@ public class SequencedAssemblyRecipe implements Recipe<RecipeWrapper> {
 		ItemStack stack = event.getItemStack();
 		if (!stack.has(AllDataComponents.SEQUENCED_ASSEMBLY)) return;
 		SequencedAssembly sequencedAssembly = stack.get(AllDataComponents.SEQUENCED_ASSEMBLY);
-		Optional<RecipeHolder<?>> optionalRecipe = Minecraft.getInstance().level.recipeAccess().byKey(sequencedAssembly.id());
+		ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, sequencedAssembly.id());
+		Optional<RecipeHolder<?>> optionalRecipe = Minecraft.getInstance().level.recipeAccess().byKey(key);
 		if (optionalRecipe.isEmpty()) return;
 		Recipe<?> recipe = optionalRecipe.get().value();
 		if (!(recipe instanceof SequencedAssemblyRecipe sequencedAssemblyRecipe)) return;
