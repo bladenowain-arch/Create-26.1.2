@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.api.event.BlockEntityBehaviourEvent;
 import com.simibubi.create.api.schematic.nbt.PartialSafeNBT;
 import com.simibubi.create.api.schematic.requirement.SpecialBlockEntityItemRequirement;
@@ -37,21 +38,19 @@ import net.neoforged.neoforge.common.NeoForge;
 public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 	implements PartialSafeNBT, IInteractionChecker, SpecialBlockEntityItemRequirement, VirtualBlockEntity {
 
+	private static final MapCodec<CompoundTag> ROOT_NBT_CODEC = MapCodec.assumeMapUnsafe(CompoundTag.CODEC);
+
 	private final Map<BehaviourType<?>, BlockEntityBehaviour> behaviours = new Reference2ObjectArrayMap<>();
 	private boolean initialized = false;
 	private boolean firstNbtRead = true;
 	protected int lazyTickRate;
 	protected int lazyTickCounter;
 	private boolean chunkUnloaded;
-
-	// Used for simulating this BE in a client-only setting
 	private boolean virtualMode;
 
 	public SmartBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
-
 		setLazyTickRate(10);
-
 		ArrayList<BlockEntityBehaviour> list = new ArrayList<>();
 		addBehaviours(list);
 		list.forEach(b -> behaviours.put(b.getType(), b));
@@ -59,10 +58,6 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 
 	public abstract void addBehaviours(List<BlockEntityBehaviour> behaviours);
 
-	/**
-	 * Gets called just before reading block entity data for behaviours. Register
-	 * anything here that depends on your custom BE data.
-	 */
 	public void addBehavioursDeferred(List<BlockEntityBehaviour> behaviours) {}
 
 	public void initialize() {
@@ -70,7 +65,6 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 			firstNbtRead = false;
 			NeoForge.EVENT_BUS.post(new BlockEntityBehaviourEvent(this, behaviours));
 		}
-
 		forEachBehaviour(BlockEntityBehaviour::initialize);
 		lazyTick();
 	}
@@ -80,20 +74,15 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 			initialize();
 			initialized = true;
 		}
-
 		if (lazyTickCounter-- <= 0) {
 			lazyTickCounter = lazyTickRate;
 			lazyTick();
 		}
-
 		forEachBehaviour(BlockEntityBehaviour::tick);
 	}
 
 	public void lazyTick() {}
 
-	/**
-	 * Hook only these in future subclasses of STE
-	 */
 	protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
 		forEachBehaviour(tb -> tb.write(tag, registries, clientPacket));
 	}
@@ -109,9 +98,6 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 		});
 	}
 
-	/**
-	 * Hook only these in future subclasses of STE
-	 */
 	protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
 		if (firstNbtRead) {
 			firstNbtRead = false;
@@ -126,7 +112,7 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 	@Override
 	protected void loadAdditional(@NotNull ValueInput input) {
 		super.loadAdditional(input);
-		read(input.read(CompoundTag.CODEC).orElseGet(CompoundTag::new), input.lookup(), false);
+		read(input.read(ROOT_NBT_CODEC).orElseGet(CompoundTag::new), input.lookup(), false);
 	}
 
 	@Override
@@ -149,21 +135,12 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 		super.preRemoveSideEffects(pos, state);
 	}
 
-	/**
-	 * Block destroyed or Chunk unloaded. Usually invalidates capabilities
-	 */
 	public void invalidate() {
 		forEachBehaviour(BlockEntityBehaviour::unload);
 	}
 
-	/**
-	 * Block destroyed or picked up by a contraption. Usually detaches kinetics
-	 */
 	public void remove() {}
 
-	/**
-	 * Block destroyed or replaced. Called by the block-entity removal lifecycle.
-	 */
 	public void destroy() {
 		forEachBehaviour(BlockEntityBehaviour::destroy);
 	}
@@ -178,9 +155,8 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 		output.store(tag);
 	}
 
-	@Override
 	public final void readClient(ValueInput input) {
-		read(input.read(CompoundTag.CODEC).orElseGet(CompoundTag::new), input.lookup(), true);
+		read(input.read(ROOT_NBT_CODEC).orElseGet(CompoundTag::new), input.lookup(), true);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -203,15 +179,13 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 	}
 
 	public ItemRequirement getRequiredItems(BlockState state) {
-		return getAllBehaviours().stream()
-			.reduce(ItemRequirement.NONE, (r, b) -> r.union(b.getRequiredItems()), ItemRequirement::union);
+		return getAllBehaviours().stream().reduce(ItemRequirement.NONE, (r, b) -> r.union(b.getRequiredItems()), ItemRequirement::union);
 	}
 
 	public void removeBehaviour(BehaviourType<?> type) {
 		BlockEntityBehaviour remove = behaviours.remove(type);
-		if (remove != null) {
+		if (remove != null)
 			remove.unload();
-		}
 	}
 
 	public void setLazyTickRate(int slowTickRate) {
@@ -219,24 +193,14 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 		this.lazyTickCounter = slowTickRate;
 	}
 
-	public void markVirtual() {
-		virtualMode = true;
-	}
-
-	public boolean isVirtual() {
-		return virtualMode;
-	}
-
-	public boolean isChunkUnloaded() {
-		return chunkUnloaded;
-	}
+	public void markVirtual() { virtualMode = true; }
+	public boolean isVirtual() { return virtualMode; }
+	public boolean isChunkUnloaded() { return chunkUnloaded; }
 
 	@Override
 	public boolean canPlayerUse(Player player) {
-		if (level != null && level.getBlockEntity(worldPosition) == this) {
+		if (level != null && level.getBlockEntity(worldPosition) == this)
 			return player.canInteractWithBlock(worldPosition, 8);
-		}
-
 		return false;
 	}
 
@@ -271,5 +235,4 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 		if (behaviour != null)
 			behaviour.awardPlayerIfNear(advancement, range);
 	}
-
 }
