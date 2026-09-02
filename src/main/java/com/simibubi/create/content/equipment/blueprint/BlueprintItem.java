@@ -3,6 +3,7 @@ package com.simibubi.create.content.equipment.blueprint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllItems;
@@ -72,7 +73,7 @@ public class BlueprintItem extends Item {
 	}
 
 	public static void assignCompleteRecipe(Level level, ItemStackHandler inv, Recipe<?> recipe) {
-		NonNullList<Ingredient> ingredients = recipe.getIngredients();
+		List<Optional<Ingredient>> ingredients = recipe.getIngredients();
 
 		for (int i = 0; i < 9; i++)
 			inv.setStackInSlot(i, ItemStack.EMPTY);
@@ -82,10 +83,10 @@ public class BlueprintItem extends Item {
 			for (int row = 0; row < shapedRecipe.getHeight(); row++)
 				for (int col = 0; col < shapedRecipe.getWidth(); col++)
 					inv.setStackInSlot(row * 3 + col,
-						convertIngredientToFilter(ingredients.get(row * shapedRecipe.getWidth() + col)));
+						convertIngredientToFilter(ingredients.get(row * shapedRecipe.getWidth() + col).orElse(Ingredient.EMPTY)));
 		} else {
 			for (int i = 0; i < ingredients.size(); i++)
-				inv.setStackInSlot(i, convertIngredientToFilter(ingredients.get(i)));
+				inv.setStackInSlot(i, convertIngredientToFilter(ingredients.get(i).orElse(Ingredient.EMPTY)));
 		}
 	}
 
