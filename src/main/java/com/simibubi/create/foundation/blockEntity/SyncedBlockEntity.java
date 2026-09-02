@@ -8,7 +8,6 @@ import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -16,6 +15,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
@@ -25,35 +25,18 @@ public abstract class SyncedBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-		return writeClient(new CompoundTag(), registries);
+	public void handleUpdateTag(ValueInput input) {
+		readClient(input);
 	}
 
 	@Override
-	public ClientboundBlockEntityDataPacket getUpdatePacket() {
-		return ClientboundBlockEntityDataPacket.create(this);
-	}
-
-	@Override
-	public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
-		readClient(tag, registries);
-	}
-
-	@Override
-	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
-		CompoundTag tag = pkt.getTag();
-		readClient(tag == null ? new CompoundTag() : tag, registries);
+	public void onDataPacket(Connection net, ValueInput input) {
+		readClient(input);
 	}
 
 	// Special handling for client update packets
-	public void readClient(CompoundTag tag, HolderLookup.Provider registries) {
-		loadAdditional(tag, registries);
-	}
-
-	// Special handling for client update packets
-	public CompoundTag writeClient(CompoundTag tag, HolderLookup.Provider registries) {
-		saveAdditional(tag, registries);
-		return tag;
+	public void readClient(ValueInput input) {
+		loadAdditional(input);
 	}
 
 	public void sendData() {
