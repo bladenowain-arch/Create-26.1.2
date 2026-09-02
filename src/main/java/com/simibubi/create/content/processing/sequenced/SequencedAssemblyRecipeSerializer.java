@@ -46,6 +46,8 @@ public class SequencedAssemblyRecipeSerializer {
 			recipe.resultPool.addAll(results);
 			recipe.transitionalItem = transitionalItem;
 			recipe.loops = loops;
+			for (int j = 0; j < recipe.sequence.size(); j++)
+				recipe.sequence.get(j).initFromSequencedAssembly(recipe, j == 0);
 			return recipe;
 		}
 	);
