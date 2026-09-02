@@ -33,7 +33,7 @@ public class MechanicalCraftingRecipe extends ShapedRecipe {
 	}
 
 	private static MechanicalCraftingRecipe fromShaped(ShapedRecipe recipe, boolean acceptMirrored) {
-		ItemStackTemplate result = ItemStackTemplate.fromNonEmptyStack(recipe.assemble(CraftingInput.EMPTY));
+		ItemStackTemplate result = recipe.getResultItem();
 		return new MechanicalCraftingRecipe(
 				new Recipe.CommonInfo(recipe.showNotification()),
 				new CraftingRecipe.CraftingBookInfo(recipe.category(), recipe.group()),
