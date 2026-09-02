@@ -172,19 +172,15 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 	protected final void saveAdditional(ValueOutput output) {
 		super.saveAdditional(output);
 		CompoundTag tag = new CompoundTag();
-		write(tag, output instanceof net.minecraft.world.level.storage.TagValueOutput ? output : null == null ? null : output.lookup(), false);
+		HolderLookup.Provider registries = getLevel() != null ? getLevel().registryAccess() : null;
+		if (registries != null)
+			write(tag, registries, false);
 		output.store(tag);
 	}
 
 	@Override
 	public final void readClient(ValueInput input) {
 		read(input.read(CompoundTag.CODEC).orElseGet(CompoundTag::new), input.lookup(), true);
-	}
-
-	@Override
-	public final CompoundTag writeClient(CompoundTag tag, HolderLookup.Provider registries) {
-		write(tag, registries, true);
-		return tag;
 	}
 
 	@SuppressWarnings("unchecked")
