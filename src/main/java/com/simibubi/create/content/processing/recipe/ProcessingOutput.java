@@ -54,10 +54,14 @@ public class ProcessingOutput {
 		ExtraCodecs.intRange(1, 99).optionalFieldOf("count", 1).forGetter(s -> s.count), ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("chance", 1F).forGetter(s -> s.chance)
 	).apply(i, (item, count, chance) -> item.map(stack -> new ProcessingOutput(stack.getItem(), count, stack.getComponentsPatch(), chance), compat -> new ProcessingOutput(compat.getFirst(), compat.getSecond(), chance))));
 	public static final Codec<ProcessingOutput> CODEC_NEW = RecordCodecBuilder.create(i -> i.group(
-		BuiltInRegistries.ITEM.byNameCodec().fieldOf("id").forGetter(s -> s.item),
+		Identifier.CODEC.fieldOf("id").forGetter(s -> s.datagenOutput != null ? s.datagenOutput : BuiltInRegistries.ITEM.getKey(s.item)),
 		ExtraCodecs.intRange(1, 99).optionalFieldOf("count", 1).forGetter(s -> s.count), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(s -> s.patch),
 		ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("chance", 1F).forGetter(s -> s.chance)
-	).apply(i, (item, count, components, chance) -> new ProcessingOutput(item, count, components, chance)));
+	).apply(i, (id, count, components, chance) -> {
+		if (!BuiltInRegistries.ITEM.containsKey(id))
+			return new ProcessingOutput(id, count, components, chance);
+		return new ProcessingOutput(BuiltInRegistries.ITEM.getValue(id), count, components, chance);
+	}));
 	@ScheduledForRemoval(inVersion = "1.21.1+ Port") @Deprecated(since = "6.0.3", forRemoval = true)
 	public static final Codec<ProcessingOutput> CODEC = Codec.withAlternative(CODEC_NEW, CODEC_OLD);
 }
