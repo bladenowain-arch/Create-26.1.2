@@ -14,7 +14,7 @@ import net.createmod.catnip.lang.Lang;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -69,7 +69,7 @@ public class PotionFluid extends VirtualFluid {
 
 	public static class PotionFluidType extends TintedFluidType {
 
-		public PotionFluidType(net.neoforged.neoforge.fluids.FluidType.Properties properties, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
+		public PotionFluidType(net.neoforged.neoforge.fluids.FluidType.Properties properties, Identifier stillTexture, Identifier flowingTexture) {
 			super(properties, stillTexture, flowingTexture);
 		}
 
