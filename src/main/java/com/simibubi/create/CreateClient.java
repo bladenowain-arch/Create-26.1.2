@@ -12,6 +12,7 @@ import com.simibubi.create.content.decoration.encasing.CasingConnectivity;
 import com.simibubi.create.content.equipment.bell.SoulPulseEffectHandler;
 import com.simibubi.create.content.equipment.potatoCannon.PotatoCannonRenderHandler;
 import com.simibubi.create.content.equipment.zapper.ZapperRenderHandler;
+import com.simibubi.create.content.fluids.potion.PotionFluid;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import com.simibubi.create.content.kinetics.simpleRelays.CogWheelBlock;
 import com.simibubi.create.content.kinetics.waterwheel.WaterWheelRenderer;
@@ -98,7 +99,7 @@ public class CreateClient {
 			new Material(Create.asResource("fluid/potion_still")),
 			new Material(Create.asResource("fluid/potion_flow")),
 			null,
-			null), AllFluids.POTION.get(), AllFluids.POTION.get().getFlowing());
+			PotionFluid.TINT_SOURCE), AllFluids.POTION.get(), AllFluids.POTION.get().getFlowing());
 		event.register(new FluidModel.Unbaked(
 			new Material(Create.asResource("fluid/tea_still")),
 			new Material(Create.asResource("fluid/tea_flow")),
