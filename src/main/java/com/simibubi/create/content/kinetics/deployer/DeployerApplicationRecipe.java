@@ -12,10 +12,13 @@ import com.simibubi.create.content.processing.sequenced.IAssemblyRecipe;
 import com.simibubi.create.foundation.utility.CreateLang;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.ItemLike;
 
@@ -34,18 +37,18 @@ public class DeployerApplicationRecipe extends ItemApplicationRecipe implements 
 	}
 
 	public static RecipeHolder<DeployerApplicationRecipe> convert(RecipeHolder<?> sandpaperRecipe) {
-		ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
-				sandpaperRecipe.id().getNamespace(),
-				sandpaperRecipe.id().getPath() + "_using_deployer"
+		Identifier id = Identifier.fromNamespaceAndPath(
+				sandpaperRecipe.id().identifier().getNamespace(),
+				sandpaperRecipe.id().identifier().getPath() + "_using_deployer"
 		);
+		ResourceKey<Recipe<?>> recipeKey = ResourceKey.create(Registries.RECIPE, id);
 		DeployerApplicationRecipe recipe = new ItemApplicationRecipe.Builder<>(DeployerApplicationRecipe::new, id)
-				.require(sandpaperRecipe.value().getIngredients()
-						.get(0))
-						.require(AllItemTags.SANDPAPER.tag)
-						.output(sandpaperRecipe.value().getResultItem(Minecraft.getInstance().level.registryAccess()))
-						.build();
+				.require(sandpaperRecipe.value().getIngredients().get(0))
+				.require(AllItemTags.SANDPAPER.tag)
+				.output(sandpaperRecipe.value().getResultItem())
+				.build();
 
-		return new RecipeHolder<>(id, recipe);
+		return new RecipeHolder<>(recipeKey, recipe);
 	}
 
 	@Override
@@ -56,11 +59,10 @@ public class DeployerApplicationRecipe extends ItemApplicationRecipe implements 
 	@Override
 	@OnlyIn(Dist.CLIENT)
 	public Component getDescriptionForAssembly() {
-		ItemStack[] matchingStacks = ingredients.get(1)
-			.getItems();
+		ItemStack[] matchingStacks = ingredients.get(1).getItems();
 		if (matchingStacks.length == 0) {
-            return Component.literal("Invalid");
-        }
+			return Component.literal("Invalid");
+		}
 		return CreateLang.translateDirect("recipe.assembly.deploying_item",
 			Component.translatable(matchingStacks[0].getDescriptionId()).getString());
 	}
