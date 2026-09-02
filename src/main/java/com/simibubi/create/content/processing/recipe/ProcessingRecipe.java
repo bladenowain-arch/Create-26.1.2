@@ -106,7 +106,7 @@ public abstract class ProcessingRecipe<I extends RecipeInput, P extends Processi
 	@Override public ItemStackTemplate getResultItem() {
 		if (getRollableResults().isEmpty())
 			throw new IllegalStateException("Processing recipe has no item result");
-		return ItemStackTemplate.fromNonEmptyStack(getRollableResults().getFirst().getStack());
+		return getRollableResults().getFirst().getTemplate();
 	}
 	@Override public boolean isSpecial() { return true; }
 	@Override public String getGroup() { return "processing"; }
