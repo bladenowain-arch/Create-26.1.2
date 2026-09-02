@@ -3,13 +3,8 @@ package com.simibubi.create.content.equipment.toolbox;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -19,8 +14,8 @@ import net.neoforged.neoforge.common.Tags;
 
 public class ToolboxDyeingRecipe extends CustomRecipe {
 
-	public ToolboxDyeingRecipe(CraftingBookCategory category) {
-		super(category);
+	public ToolboxDyeingRecipe() {
+		super();
 	}
 
 	@Override
@@ -49,7 +44,7 @@ public class ToolboxDyeingRecipe extends CustomRecipe {
 	}
 
 	@Override
-	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
+	public ItemStack assemble(CraftingInput input) {
 		ItemStack toolbox = ItemStack.EMPTY;
 		DyeColor color = DyeColor.BROWN;
 
