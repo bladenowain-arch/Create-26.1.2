@@ -55,7 +55,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -91,8 +90,8 @@ public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
 
 	@Override public <T extends BlockEntity> CreateBlockEntityBuilder<T, CreateRegistrate> blockEntity(String name, BlockEntityFactory<T> factory) { return blockEntity(self(), name, factory); }
 	@Override public <T extends BlockEntity, P> CreateBlockEntityBuilder<T, P> blockEntity(P parent, String name, BlockEntityFactory<T> factory) { return (CreateBlockEntityBuilder<T, P>) entry(name, callback -> CreateBlockEntityBuilder.create(this, parent, name, callback, factory)); }
-	@Override public <T extends Entity> CreateEntityBuilder<T, CreateRegistrate> entity(String name, EntityType.EntityFactory<T> factory, MobCategory classification) { return this.entity(self(), name, factory, classification); }
-	@Override public <T extends Entity, P> CreateEntityBuilder<T, P> entity(P parent, String name, EntityType.EntityFactory<T> factory, MobCategory classification) { return (CreateEntityBuilder<T, P>) this.entry(name, callback -> CreateEntityBuilder.create(this, parent, name, callback, factory, classification)); }
+	public <T extends Entity> CreateEntityBuilder<T, CreateRegistrate> entity(String name, EntityType.EntityFactory<T> factory, MobCategory classification) { return this.entity(self(), name, factory, classification); }
+	public <T extends Entity, P> CreateEntityBuilder<T, P> entity(P parent, String name, EntityType.EntityFactory<T> factory, MobCategory classification) { return (CreateEntityBuilder<T, P>) this.entry(name, callback -> CreateEntityBuilder.create(this, parent, name, callback, factory, classification)); }
 
 	public <T extends MountedItemStorageType<?>> SimpleBuilder<MountedItemStorageType<?>, T, CreateRegistrate> mountedItemStorage(String name, Supplier<T> supplier) { return this.entry(name, callback -> new SimpleBuilder<>(this, this, name, callback, CreateRegistries.MOUNTED_ITEM_STORAGE_TYPE, supplier).byBlock(MountedItemStorageType.REGISTRY)); }
 	public <T extends MountedFluidStorageType<?>> SimpleBuilder<MountedFluidStorageType<?>, T, CreateRegistrate> mountedFluidStorage(String name, Supplier<T> supplier) { return this.entry(name, callback -> new SimpleBuilder<>(this, this, name, callback, CreateRegistries.MOUNTED_FLUID_STORAGE_TYPE, supplier).byBlock(MountedFluidStorageType.REGISTRY)); }
@@ -101,7 +100,7 @@ public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
 
 	public <T extends Block> BlockBuilder<T, CreateRegistrate> paletteStoneBlock(String name, NonNullFunction<Properties, T> factory, NonNullSupplier<Block> propertiesFrom, boolean worldGenStone, boolean hasNaturalVariants) {
 		BlockBuilder<T, CreateRegistrate> builder = super.block(name, factory).initialProperties(propertiesFrom).transform(pickaxeOnly())
-			.blockstate(hasNaturalVariants ? BlockStateGen.naturalStoneTypeBlock(name) : (c, p) -> p.simpleBlock(c.get(), p.models().cubeAll(c.getName(), p.modLoc("block/palettes/stone_types/" + c.getName()))))
+			.blockstate(hasNaturalVariants ? BlockStateGen.naturalStoneTypeBlock(name) : (c, p) -> p.models().cubeAll(c.getName(), p.modLoc("block/palettes/stone_types/" + c.getName())))
 			.tag(BlockTags.DRIPSTONE_REPLACEABLE).tag(BlockTags.AZALEA_ROOT_REPLACEABLE).tag(BlockTags.MOSS_REPLACEABLE).tag(BlockTags.LUSH_GROUND_REPLACEABLE)
 			.item().model((c, p) -> p.cubeAll(c.getName(), p.modLoc(hasNaturalVariants ? "block/palettes/stone_types/natural/" + name + "_1" : "block/palettes/stone_types/" + c.getName()))).build();
 		return builder;
@@ -117,10 +116,7 @@ public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
 	public FluidBuilder<BaseFlowingFluid.Flowing, CreateRegistrate> standardFluid(String name) { return fluid(name, Identifier.fromNamespaceAndPath(getModid(), "fluid/" + name + "_still"), Identifier.fromNamespaceAndPath(getModid(), "fluid/" + name + "_flow")); }
 	public FluidBuilder<BaseFlowingFluid.Flowing, CreateRegistrate> standardFluid(String name, FluidBuilder.FluidTypeFactory typeFactory) { return fluid(name, Identifier.fromNamespaceAndPath(getModid(), "fluid/" + name + "_still"), Identifier.fromNamespaceAndPath(getModid(), "fluid/" + name + "_flow"), typeFactory); }
 	public static FluidType defaultFluidType(FluidType.Properties properties, Identifier stillTexture, Identifier flowingTexture) {
-		return new FluidType(properties) { @Override public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) { consumer.accept(new IClientFluidTypeExtensions() {
-			@Override public Identifier getStillTexture() { return stillTexture; }
-			@Override public Identifier getFlowingTexture() { return flowingTexture; }
-		}); } };
+		return new FluidType(properties);
 	}
 
 	public static NonNullConsumer<? super Block> casingConnectivity(BiConsumer<Block, CasingConnectivity> consumer) { return entry -> CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> registerCasingConnectivity(entry, consumer)); }
