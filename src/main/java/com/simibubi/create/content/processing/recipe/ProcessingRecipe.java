@@ -82,7 +82,7 @@ public abstract class ProcessingRecipe<I extends RecipeInput, P extends Processi
 	}
 
 	public P getParams() { return params; }
-	@Override public NonNullList<Ingredient> getIngredients() { return ingredients; }
+	public NonNullList<Ingredient> getIngredients() { return ingredients; }
 	public NonNullList<SizedFluidIngredient> getFluidIngredients() { return fluidIngredients; }
 	public List<ProcessingOutput> getRollableResults() { return results; }
 	public NonNullList<FluidStack> getFluidResults() { return fluidResults; }
