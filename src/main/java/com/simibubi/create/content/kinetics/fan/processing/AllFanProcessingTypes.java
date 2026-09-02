@@ -279,15 +279,13 @@ public class AllFanProcessingTypes {
 				livingEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20, 1, false, false));
 			}
 			if (entity instanceof Horse horse) {
-				int progress = horse.getPersistentData()
-					.getInt("CreateHaunting");
+				int progress = horse.getPersistentData().getIntOr("CreateHaunting", 0);
 				if (progress < 100) {
 					if (progress % 10 == 0) {
 						level.playSound(null, entity.blockPosition(), SoundEvents.SOUL_ESCAPE.value(), SoundSource.NEUTRAL,
 							1f, 1.5f * progress / 100f);
 					}
-					horse.getPersistentData()
-						.putInt("CreateHaunting", progress + 1);
+					horse.getPersistentData().putInt("CreateHaunting", progress + 1);
 					return;
 				}
 
@@ -297,8 +295,7 @@ public class AllFanProcessingTypes {
 				SkeletonHorse skeletonHorse = EntityType.SKELETON_HORSE.create(level);
 				CompoundTag serializeNBT = horse.saveWithoutId(new CompoundTag());
 				serializeNBT.remove("UUID");
-				if (!horse.getBodyArmorItem()
-					.isEmpty())
+				if (!horse.getBodyArmorItem().isEmpty())
 					horse.spawnAtLocation(horse.getBodyArmorItem());
 
 				skeletonHorse.deserializeNBT(entity.registryAccess(), serializeNBT);
@@ -336,20 +333,15 @@ public class AllFanProcessingTypes {
 
 		@Override
 		public boolean canProcess(ItemStack stack, Level level) {
-			return level.recipeAccess()
-				.getRecipeFor(RecipeType.SMOKING, new SingleRecipeInput(stack), level)
-				.filter(AllRecipeTypes.CAN_BE_AUTOMATED)
-				.isPresent();
+			return AllRecipeTypes.HAUNTING.find(new SingleRecipeInput(stack), level).isPresent();
 		}
 
 		@Override
 		@Nullable
 		public List<ItemStack> process(ItemStack stack, Level level) {
-			return level.recipeAccess()
-				.getRecipeFor(RecipeType.SMOKING, new SingleRecipeInput(stack), level)
-				.filter(AllRecipeTypes.CAN_BE_AUTOMATED)
+			return AllRecipeTypes.SMOKING.find(new SingleRecipeInput(stack), level)
 				.map(RecipeHolder::value)
-				.map(r -> RecipeApplier.applyRecipeOn(level, stack, r, false))
+				.map(r -> RecipeApplier.applyRecipeOn(level, stack, r, true))
 				.orElse(null);
 		}
 
@@ -357,40 +349,30 @@ public class AllFanProcessingTypes {
 		public void spawnProcessingParticles(Level level, Vec3 pos) {
 			if (level.getRandom().nextInt(8) != 0)
 				return;
-			level.addParticle(ParticleTypes.POOF, pos.x, pos.y + .25f, pos.z, 0, 1 / 16f, 0);
+			level.addParticle(ParticleTypes.SMOKE, pos.x, pos.y + .25f, pos.z, 0, 1 / 16f, 0);
 		}
 
 		@Override
 		public void morphAirFlow(AirFlowParticleAccess particleAccess, RandomSource random) {
-			particleAccess.setColor(Color.mixColors(0x0, 0x555555, random.nextFloat()));
-			particleAccess.setAlpha(1f);
-			if (random.nextFloat() < 1 / 32f)
-				particleAccess.spawnExtraParticle(ParticleTypes.SMOKE, .125f);
-			if (random.nextFloat() < 1 / 32f)
-				particleAccess.spawnExtraParticle(ParticleTypes.LARGE_SMOKE, .125f);
+			particleAccess.setColor(Color.mixColors(0x0, 0x888888, random.nextFloat()));
+			particleAccess.setAlpha(.75f);
+			if (random.nextFloat() < 1 / 16f)
+				particleAccess.spawnExtraParticle(ParticleTypes.SMOKE, .25f);
 		}
 
 		@Override
 		public void affectEntity(Entity entity, Level level) {
 			if (level.isClientSide)
 				return;
-
-			if (!entity.fireImmune()) {
-				entity.igniteForSeconds(2);
-				entity.hurt(CreateDamageSources.fanFire(level), 2);
-			}
+			if (entity instanceof LivingEntity livingEntity)
+				livingEntity.setRemainingFireTicks(Math.min(livingEntity.getRemainingFireTicks() + 100, 200));
 		}
 	}
 
 	public static class SplashingType implements FanProcessingType {
 		@Override
 		public boolean isValidAt(Level level, BlockPos pos) {
-			FluidState fluidState = level.getFluidState(pos);
-			if (AllFluidTags.FAN_PROCESSING_CATALYSTS_SPLASHING.matches(fluidState)) {
-				return true;
-			}
-			BlockState blockState = level.getBlockState(pos);
-			return AllBlockTags.FAN_PROCESSING_CATALYSTS_SPLASHING.matches(blockState);
+			return AllFluidTags.FAN_PROCESSING_CATALYSTS_SPLASHING.matches(level.getFluidState(pos));
 		}
 
 		@Override
@@ -400,8 +382,7 @@ public class AllFanProcessingTypes {
 
 		@Override
 		public boolean canProcess(ItemStack stack, Level level) {
-			return AllRecipeTypes.SPLASHING.find(new SingleRecipeInput(stack), level)
-				.isPresent();
+			return AllRecipeTypes.SPLASHING.find(new SingleRecipeInput(stack), level).isPresent();
 		}
 
 		@Override
@@ -417,37 +398,21 @@ public class AllFanProcessingTypes {
 		public void spawnProcessingParticles(Level level, Vec3 pos) {
 			if (level.getRandom().nextInt(8) != 0)
 				return;
-			Vector3f color = new Color(0x0055FF).asVectorF();
-			level.addParticle(new DustParticleOptions(color, 1), pos.x + (level.getRandom().nextFloat() - .5f) * .5f,
-				pos.y + .5f, pos.z + (level.getRandom().nextFloat() - .5f) * .5f, 0, 1 / 8f, 0);
-			level.addParticle(ParticleTypes.SPIT, pos.x + (level.getRandom().nextFloat() - .5f) * .5f, pos.y + .5f,
-				pos.z + (level.getRandom().nextFloat() - .5f) * .5f, 0, 1 / 8f, 0);
+			level.addParticle(ParticleTypes.SPLASH, pos.x, pos.y + .25f, pos.z, 0, 0, 0);
 		}
 
 		@Override
 		public void morphAirFlow(AirFlowParticleAccess particleAccess, RandomSource random) {
-			particleAccess.setColor(Color.mixColors(0x4499FF, 0x2277FF, random.nextFloat()));
-			particleAccess.setAlpha(1f);
-			if (random.nextFloat() < 1 / 32f)
-				particleAccess.spawnExtraParticle(ParticleTypes.BUBBLE, .125f);
-			if (random.nextFloat() < 1 / 32f)
-				particleAccess.spawnExtraParticle(ParticleTypes.BUBBLE_POP, .125f);
+			particleAccess.setColor(Color.mixColors(0xFFFFFF, 0xCCCCFF, random.nextFloat()));
+			particleAccess.setAlpha(.5f);
 		}
 
 		@Override
 		public void affectEntity(Entity entity, Level level) {
 			if (level.isClientSide)
 				return;
-
-			if (entity instanceof EnderMan || entity.getType() == EntityType.SNOW_GOLEM
-				|| entity.getType() == EntityType.BLAZE) {
-				entity.hurt(entity.damageSources().drown(), 2);
-			}
-			if (entity.isOnFire()) {
-				entity.clearFire();
-				level.playSound(null, entity.blockPosition(), SoundEvents.GENERIC_EXTINGUISH_FIRE,
-					SoundSource.NEUTRAL, 0.7F, 1.6F + (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.4F);
-			}
+			if (entity instanceof EnderMan enderman)
+				enderman.hurt(CreateDamageSources.fanDamage(level), 2);
 		}
 	}
 }
