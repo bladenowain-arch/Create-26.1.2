@@ -49,7 +49,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
+enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 	CONVERSION(ConversionRecipe::new), CRUSHING(CrushingRecipe::new), CUTTING(CuttingRecipe::new), MILLING(MillingRecipe::new),
 	BASIN(BasinRecipe::new), MIXING(MixingRecipe::new), COMPACTING(CompactingRecipe::new), PRESSING(PressingRecipe::new),
 	SANDPAPER_POLISHING(SandPaperPolishingRecipe::new), SPLASHING(SplashingRecipe::new), HAUNTING(HauntingRecipe::new),
@@ -60,7 +60,7 @@ public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 	TOOLBOX_DYEING(() -> new SimpleCraftingRecipeSerializer<>(ToolboxDyeingRecipe::new), () -> RecipeType.CRAFTING, false),
 	ITEM_COPYING(() -> new SimpleCraftingRecipeSerializer<>(ItemCopyingRecipe::new), () -> RecipeType.CRAFTING, false);
 
-	public static final Predicate<RecipeHolder<?>> CAN_BE_AUTOMATED = r -> !r.id().getPath().endsWith("_manual_only");
+	public static final Predicate<RecipeHolder<?>> CAN_BE_AUTOMATED = r -> !r.id().identifier().getPath().endsWith("_manual_only");
 	public final Identifier id;
 	public final Supplier<RecipeSerializer<?>> serializerSupplier;
 	private final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<?>> serializerObject;
