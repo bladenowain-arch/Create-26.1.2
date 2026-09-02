@@ -187,7 +187,7 @@ public class CreateClient {
                             Component.literal("Click here to disable this warning")));
             });
 
-		mc.player.displayClientMessage(text, false);
+		mc.player.sendSystemMessage(text);
 	}
 
 }
