@@ -1,10 +1,12 @@
 package com.simibubi.create.content.processing.recipe;
 
 import org.jetbrains.annotations.ApiStatus.ScheduledForRemoval;
+
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import net.createmod.catnip.data.Pair;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -49,12 +51,11 @@ public class ProcessingOutput {
 		ITEM_CODEC_OLD.fieldOf("item").forGetter(s -> s.datagenOutput != null ? Either.right(Pair.of(s.datagenOutput, s.count)) : Either.left(s.item.getDefaultInstance())),
 		ExtraCodecs.intRange(1, 99).optionalFieldOf("count", 1).forGetter(s -> s.count), ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("chance", 1F).forGetter(s -> s.chance)
 	).apply(i, (item, count, chance) -> item.map(stack -> new ProcessingOutput(stack.getItem(), count, stack.getComponentsPatch(), chance), compat -> new ProcessingOutput(compat.getFirst(), compat.getSecond(), chance))));
-	private static final Codec<Either<Item, Identifier>> ITEM_CODEC = Codec.either(BuiltInRegistries.ITEM.byNameCodec(), Identifier.CODEC);
 	public static final Codec<ProcessingOutput> CODEC_NEW = RecordCodecBuilder.create(i -> i.group(
-		ITEM_CODEC.fieldOf("id").forGetter(s -> s.datagenOutput != null ? Either.right(s.datagenOutput) : Either.left(s.item)),
+		BuiltInRegistries.ITEM.byNameCodec().fieldOf("id").forGetter(s -> s.item),
 		ExtraCodecs.intRange(1, 99).optionalFieldOf("count", 1).forGetter(s -> s.count), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(s -> s.patch),
 		ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("chance", 1F).forGetter(s -> s.chance)
-	).apply(i, (item, count, components, chance) -> item.map(stack -> new ProcessingOutput(stack, count, components, chance), compat -> new ProcessingOutput(compat, count, chance))));
+	).apply(i, (item, count, components, chance) -> new ProcessingOutput(item, count, components, chance)));
 	@ScheduledForRemoval(inVersion = "1.21.1+ Port") @Deprecated(since = "6.0.3", forRemoval = true)
 	public static final Codec<ProcessingOutput> CODEC = Codec.withAlternative(CODEC_NEW, CODEC_OLD);
 }
