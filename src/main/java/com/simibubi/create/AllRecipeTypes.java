@@ -49,7 +49,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
+public enum AllRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
 	CONVERSION(ConversionRecipe::new), CRUSHING(CrushingRecipe::new), CUTTING(CuttingRecipe::new), MILLING(MillingRecipe::new),
 	BASIN(BasinRecipe::new), MIXING(MixingRecipe::new), COMPACTING(CompactingRecipe::new), PRESSING(PressingRecipe::new),
 	SANDPAPER_POLISHING(SandPaperPolishingRecipe::new), SPLASHING(SplashingRecipe::new), HAUNTING(HauntingRecipe::new),
