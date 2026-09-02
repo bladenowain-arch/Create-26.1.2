@@ -19,6 +19,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 
 public class ProcessingOutput {
@@ -38,6 +39,7 @@ public class ProcessingOutput {
 	public ProcessingOutput(Identifier item, int count, DataComponentPatch patch, float chance) { this.item = Items.AIR; this.datagenOutput = item; this.count = count; this.patch = patch; this.chance = chance; }
 	private ItemStack getStack(int count) { var stack = new ItemStack(item, count); if (!patch.isEmpty()) stack.applyComponents(patch); return stack; }
 	public ItemStack getStack() { return getStack(count); }
+	public ItemStackTemplate getTemplate() { return new ItemStackTemplate(item.builtInRegistryHolder(), count, patch); }
 	public float getChance() { return chance; }
 	public ItemStack rollOutput(RandomSource randomSource) {
 		if (chance < 1F) { int count = this.count; for (int roll = 0; roll < this.count; roll++) if (randomSource.nextFloat() > chance) count--; return count == 0 ? ItemStack.EMPTY : getStack(count); }
