@@ -19,6 +19,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.FlowingFluid;
@@ -87,6 +88,7 @@ public abstract class ProcessingRecipeBuilder<P extends ProcessingRecipeParams, 
 	public S output(float chance, ItemLike item, int amount) { return output(chance, new ItemStack(item, amount)); }
 	public S output(ItemStack output) { return output(1, output); }
 	public S output(float chance, ItemStack output) { return output(new ProcessingOutput(output, chance)); }
+	public S output(ItemStackTemplate output) { return output(new ProcessingOutput(output.create(), 1)); }
 	public S output(float chance, DatagenMod mod, String id, int amount) { return output(new ProcessingOutput(mod.asResource(id), amount, chance)); }
 	public S output(Identifier id) { return output(1, id, 1); }
 	public S output(DatagenMod mod, String id) { return output(1, mod.asResource(id), 1); }
