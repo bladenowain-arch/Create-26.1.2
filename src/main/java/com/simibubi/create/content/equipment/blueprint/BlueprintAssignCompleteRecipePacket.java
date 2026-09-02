@@ -4,9 +4,12 @@ import com.simibubi.create.AllPackets;
 import net.createmod.catnip.net.base.ServerboundPacketPayload;
 import io.netty.buffer.ByteBuf;
 
+import net.minecraft.core.Registries;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.crafting.Recipe;
 
 public record BlueprintAssignCompleteRecipePacket(Identifier recipeId) implements ServerboundPacketPayload {
 	public static final StreamCodec<ByteBuf, BlueprintAssignCompleteRecipePacket> STREAM_CODEC = Identifier.STREAM_CODEC.map(
@@ -16,9 +19,10 @@ public record BlueprintAssignCompleteRecipePacket(Identifier recipeId) implement
 	@Override
 	public void handle(ServerPlayer player) {
 		if (player.containerMenu instanceof BlueprintMenu c) {
+			ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, recipeId);
 			player.level()
 					.recipeAccess()
-					.byKey(recipeId)
+					.byKey(key)
 					.ifPresent(r -> BlueprintItem.assignCompleteRecipe(c.player.level(), c.ghostInventory, r.value()));
 		}
 	}
