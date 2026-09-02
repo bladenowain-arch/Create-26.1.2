@@ -21,7 +21,7 @@ public class SodiumCompat {
 	public static final Identifier SAW_TEXTURE = Create.asResource("block/saw_reversed");
 	public static final Identifier FACTORY_PANEL_TEXTURE = Create.asResource("block/factory_panel_connections_animated");
 
-	public static void init(IEventBus modEventBus, IEventBus neoEventBus) {
+	public static void init(IEventBus neoEventBus) {
 		Minecraft mc = Minecraft.getInstance();
 		neoEventBus.addListener((RenderLevelStageEvent event) -> {
 			if (event.getStage() == Stage.AFTER_ENTITIES) {
