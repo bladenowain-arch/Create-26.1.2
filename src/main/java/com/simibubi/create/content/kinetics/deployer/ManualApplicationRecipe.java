@@ -131,7 +131,7 @@ public class ManualApplicationRecipe extends ItemApplicationRecipe {
 	public static RecipeHolder<DeployerApplicationRecipe> asDeploying(RecipeHolder<?> recipe) {
 		ManualApplicationRecipe mar = (ManualApplicationRecipe) recipe.value();
 		Identifier id = AllRecipeTypes.CAN_BE_AUTOMATED.test(recipe) ?
-			recipe.id().withSuffix("_using_deployer") : recipe.id();
+			recipe.id().identifier().withSuffix("_using_deployer") : recipe.id().identifier();
 		ResourceKey<Recipe<?>> recipeKey = ResourceKey.create(Registries.RECIPE, id);
 		ItemApplicationRecipe.Builder<DeployerApplicationRecipe> builder =
 			new ItemApplicationRecipe.Builder<>(DeployerApplicationRecipe::new, id)
