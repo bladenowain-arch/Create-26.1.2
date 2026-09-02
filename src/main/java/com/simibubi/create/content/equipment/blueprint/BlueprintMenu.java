@@ -15,7 +15,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -72,7 +71,7 @@ public class BlueprintMenu extends GhostItemMenu<BlueprintSection> {
 
 		ServerPlayer serverplayerentity = (ServerPlayer) player;
 		CraftingContainer craftingInventory = new BlueprintCraftingInventory(this, ghostInventory);
-		Optional<RecipeHolder<CraftingRecipe>> optional = level.recipeAccess()
+		Optional<RecipeHolder<? extends CraftingRecipe>> optional = level.recipeAccess()
 			.getRecipeFor(RecipeType.CRAFTING, craftingInventory.asCraftInput(), level);
 
 		if (!optional.isPresent()) {
