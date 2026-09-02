@@ -38,7 +38,10 @@ public abstract class ProcessingRecipeBuilder<P extends ProcessingRecipeParams, 
 	protected List<ICondition> recipeConditions;
 
 	public ProcessingRecipeBuilder(Factory<P, R> factory, Identifier recipeId) {
-		this.recipeId = recipeId; this.factory = factory; this.params = createParams(); this.recipeConditions = new ArrayList<>();
+		this.recipeId = recipeId;
+		this.factory = factory;
+		this.params = createParams();
+		this.recipeConditions = new ArrayList<>();
 	}
 	protected abstract P createParams();
 	public abstract S self();
@@ -57,10 +60,15 @@ public abstract class ProcessingRecipeBuilder<P extends ProcessingRecipeParams, 
 	public R build() { return factory.create(params); }
 
 	public void build(RecipeOutput consumer) {
-		R recipe = build(); IRecipeTypeInfo recipeType = recipe.getTypeInfo(); Identifier typeId = recipeType.getId();
+		R recipe = build();
+		IRecipeTypeInfo recipeType = recipe.getTypeInfo();
+		Identifier typeId = recipeType.getId();
 		Identifier id = recipeId.withPath(path -> typeId.path() + "/" + path);
 		var errors = recipe.validate();
-		if (!errors.isEmpty()) { errors.add(recipe.getClass().getSimpleName() + " with id " + id + " failed validation:"); Create.LOGGER.warn(Joiner.on('\n').join(errors)); }
+		if (!errors.isEmpty()) {
+			errors.add(recipe.getClass().getSimpleName() + " with id " + id + " failed validation:");
+			Create.LOGGER.warn(Joiner.on('\n').join(errors));
+		}
 		ResourceKey<net.minecraft.world.item.crafting.Recipe<?>> key = ResourceKey.create(Registries.RECIPE, id);
 		consumer.accept(key, recipe, null, recipeConditions.toArray(new ICondition[0]));
 	}
