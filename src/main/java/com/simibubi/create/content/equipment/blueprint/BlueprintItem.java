@@ -15,7 +15,6 @@ import com.simibubi.create.foundation.item.ItemHelper;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionResult;
@@ -26,6 +25,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Ingredient.ItemValue;
 import net.minecraft.world.item.crafting.Ingredient.TagValue;
@@ -73,7 +73,13 @@ public class BlueprintItem extends Item {
 	}
 
 	public static void assignCompleteRecipe(Level level, ItemStackHandler inv, Recipe<?> recipe) {
-		List<Optional<Ingredient>> ingredients = recipe.getIngredients();
+		List<Optional<Ingredient>> ingredients;
+		if (recipe instanceof ShapedRecipe shapedRecipe)
+			ingredients = shapedRecipe.getIngredients();
+		else if (recipe instanceof CraftingRecipe craftingRecipe)
+			ingredients = craftingRecipe.placementInfo().stackedRecipeContents().stream().map(Optional::of).toList();
+		else
+			return;
 
 		for (int i = 0; i < 9; i++)
 			inv.setStackInSlot(i, ItemStack.EMPTY);
