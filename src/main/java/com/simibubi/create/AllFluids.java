@@ -45,7 +45,6 @@ import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidInteractionRegistry;
 import net.neoforged.neoforge.fluids.FluidInteractionRegistry.InteractionInformation;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 
 public class AllFluids {
@@ -135,14 +134,8 @@ public class AllFluids {
 	}
 
 	public static abstract class TintedFluidType extends FluidType {
-		protected static final int NO_TINT = 0xffffffff;
-		private final Identifier stillTexture;
-		private final Identifier flowingTexture;
-
 		public TintedFluidType(Properties properties, Identifier stillTexture, Identifier flowingTexture) {
 			super(properties);
-			this.stillTexture = stillTexture;
-			this.flowingTexture = flowingTexture;
 		}
 
 		@Override
@@ -164,8 +157,6 @@ public class AllFluids {
 			});
 		}
 
-		protected abstract int getTintColor(FluidStack stack);
-		protected abstract int getTintColor(FluidState state, net.minecraft.world.level.BlockAndTintGetter getter, BlockPos pos);
 		protected Vector3f getCustomFogColor() { return null; }
 		protected float getFogDistanceModifier() { return 1f; }
 	}
@@ -187,8 +178,6 @@ public class AllFluids {
 			super(properties, stillTexture, flowingTexture);
 		}
 
-		@Override protected int getTintColor(FluidStack stack) { return NO_TINT; }
-		@Override protected int getTintColor(FluidState state, net.minecraft.world.level.BlockAndTintGetter getter, BlockPos pos) { return NO_TINT; }
 		@Override protected Vector3f getCustomFogColor() { return fogColor; }
 		@Override protected float getFogDistanceModifier() { return fogDistance.get(); }
 	}
