@@ -17,6 +17,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.context.ContextKeySet;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.HangingEntity;
@@ -83,6 +85,12 @@ public class BlueprintItem extends Item {
 
 		for (int i = 0; i < 9; i++)
 			inv.setStackInSlot(i, ItemStack.EMPTY);
+
+		ItemStack result = recipe.display().stream()
+			.findFirst()
+			.map(display -> display.result().resolveForFirstStack(ContextMap.Builder.create(ContextKeySet.EMPTY).build()))
+			.orElse(ItemStack.EMPTY);
+		inv.setStackInSlot(9, result);
 
 		if (recipe instanceof ShapedRecipe shapedRecipe) {
 			for (int row = 0; row < shapedRecipe.getHeight(); row++)
