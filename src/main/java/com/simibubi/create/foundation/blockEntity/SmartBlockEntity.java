@@ -138,6 +138,12 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 		invalidate();
 	}
 
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		destroy();
+		super.preRemoveSideEffects(pos, state);
+	}
+
 	/**
 	 * Block destroyed or Chunk unloaded. Usually invalidates capabilities
 	 */
@@ -151,7 +157,7 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 	public void remove() {}
 
 	/**
-	 * Block destroyed or replaced. Requires Block to call IBE::onRemove
+	 * Block destroyed or replaced. Called by the block-entity removal lifecycle.
 	 */
 	public void destroy() {
 		forEachBehaviour(BlockEntityBehaviour::destroy);
