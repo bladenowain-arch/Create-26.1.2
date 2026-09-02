@@ -42,7 +42,7 @@ public class DeployerApplicationRecipe extends ItemApplicationRecipe implements 
 		);
 		ResourceKey<Recipe<?>> recipeKey = ResourceKey.create(Registries.RECIPE, id);
 		DeployerApplicationRecipe recipe = new ItemApplicationRecipe.Builder<>(DeployerApplicationRecipe::new, id)
-				.require(sandpaperRecipe.value().getIngredients().get(0))
+				.require(sandpaperRecipe.value().getIngredients().get(0).orElseThrow())
 				.require(AllItemTags.SANDPAPER.tag)
 				.output(sandpaperRecipe.value().getResultItem())
 				.build();
