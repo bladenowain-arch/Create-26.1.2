@@ -25,6 +25,16 @@ public abstract class SyncedBlockEntity extends BlockEntity {
 	}
 
 	@Override
+	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+		return saveWithoutMetadata(registries);
+	}
+
+	@Override
+	public ClientboundBlockEntityDataPacket getUpdatePacket() {
+		return ClientboundBlockEntityDataPacket.create(this);
+	}
+
+	@Override
 	public void handleUpdateTag(ValueInput input) {
 		readClient(input);
 	}
