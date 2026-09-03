@@ -1,24 +1,16 @@
 package com.simibubi.create.content.equipment.blueprint;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
 import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.content.logistics.filter.AttributeFilterWhitelistMode;
-import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttribute;
-import com.simibubi.create.content.logistics.item.filter.attribute.ItemAttribute.ItemAttributeEntry;
-import com.simibubi.create.content.logistics.item.filter.attribute.attributes.InTagAttribute;
 import com.simibubi.create.foundation.item.ItemHelper;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.util.context.ContextKeySet;
-import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.HangingEntity;
