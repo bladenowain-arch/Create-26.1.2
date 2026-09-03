@@ -10,7 +10,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * A class containing some basic setup for other recipe generators to use.
@@ -27,8 +27,8 @@ public abstract class BaseRecipeProvider extends RecipeProvider {
 		this.modid = defaultNamespace;
 	}
 
-	protected ResourceLocation asResource(String path) {
-		return ResourceLocation.fromNamespaceAndPath(modid, path);
+	protected Identifier asResource(String path) {
+		return Identifier.fromNamespaceAndPath(modid, path);
 	}
 
 	protected GeneratedRecipe register(GeneratedRecipe recipe) {
