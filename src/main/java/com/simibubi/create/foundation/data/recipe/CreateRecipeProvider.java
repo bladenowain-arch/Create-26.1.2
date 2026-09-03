@@ -1,6 +1,5 @@
 package com.simibubi.create.foundation.data.recipe;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -20,7 +19,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.fluids.FluidType;
+import net.neoforged.neoforge.fluids.FluidType;
 
 public final class CreateRecipeProvider {
 	static final int BUCKET = FluidType.BUCKET_VOLUME;
