@@ -6,11 +6,14 @@ import java.util.concurrent.CompletableFuture;
 
 import com.simibubi.create.Create;
 
+import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.critereon.InventoryChangeTrigger;
+import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.ItemLike;
 
 /**
  * A class containing some basic setup for other recipe generators to use.
@@ -18,12 +21,11 @@ import net.minecraft.resources.Identifier;
  * a processing recipe type and want to use Create's helpers.
  * For processing recipes extend {@link StandardProcessingRecipeGen}.
  */
-public abstract class BaseRecipeProvider extends RecipeProvider {
+public abstract class BaseRecipeProvider {
 	protected final String modid;
 	protected final List<GeneratedRecipe> all = new ArrayList<>();
 
 	public BaseRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries, String defaultNamespace) {
-		super(output, registries);
 		this.modid = defaultNamespace;
 	}
 
@@ -36,10 +38,25 @@ public abstract class BaseRecipeProvider extends RecipeProvider {
 		return recipe;
 	}
 
-	@Override
+	/**
+	 * Registers all recipes accumulated by this generator against the supplied
+	 * 26.1 {@link RecipeOutput}.
+	 */
 	public void buildRecipes(RecipeOutput recipeOutput) {
 		all.forEach(c -> c.register(recipeOutput));
 		Create.LOGGER.info("{} registered {} recipe{}", getName(), all.size(), all.size() == 1 ? "" : "s");
+	}
+
+	protected Criterion<InventoryChangeTrigger.TriggerInstance> inventoryTrigger(ItemPredicate... items) {
+		return InventoryChangeTrigger.TriggerInstance.hasItems(items);
+	}
+
+	protected Criterion<InventoryChangeTrigger.TriggerInstance> inventoryTrigger(ItemLike item) {
+		return InventoryChangeTrigger.TriggerInstance.hasItems(item);
+	}
+
+	public String getName() {
+		return modid + " recipes";
 	}
 
 	@FunctionalInterface
