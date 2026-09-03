@@ -149,11 +149,10 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 	protected final void saveAdditional(ValueOutput output) {
 		super.saveAdditional(output);
 		if (getLevel() != null) {
-			TagValueOutput nested = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, getLevel().registryAccess());
 			CompoundTag tag = new CompoundTag();
-			write(tag, getLevel().registryAccess(), false);
-			nested.store(ROOT_NBT_CODEC, tag);
-			output.store(ROOT_NBT_CODEC, nested.buildResult());
+			HolderLookup.Provider registries = getLevel().registryAccess();
+			write(tag, registries, false);
+			output.store(ROOT_NBT_CODEC, tag);
 		}
 	}
 
