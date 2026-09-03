@@ -3,6 +3,7 @@ package com.simibubi.create.api.data.recipe;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 
 import com.simibubi.create.Create;
 
@@ -12,6 +13,7 @@ import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.ItemLike;
 
@@ -62,5 +64,41 @@ public abstract class BaseRecipeProvider {
 	@FunctionalInterface
 	public interface GeneratedRecipe {
 		void register(RecipeOutput recipeOutput);
+	}
+
+	/**
+	 * Adapts Create's recipe generator helpers to Minecraft 26.1's
+	 * {@link RecipeProvider.Runner} based data generation API.
+	 */
+	public static class Runner extends RecipeProvider.Runner {
+		private final PackOutput output;
+		private final CompletableFuture<HolderLookup.Provider> registries;
+		private final BiFunction<PackOutput, CompletableFuture<HolderLookup.Provider>, BaseRecipeProvider> factory;
+		private final String name;
+
+		public Runner(PackOutput output, CompletableFuture<HolderLookup.Provider> registries,
+				BiFunction<PackOutput, CompletableFuture<HolderLookup.Provider>, BaseRecipeProvider> factory, String name) {
+			super(output, registries);
+			this.output = output;
+			this.registries = registries;
+			this.factory = factory;
+			this.name = name;
+		}
+
+		@Override
+		protected RecipeProvider createRecipeProvider(HolderLookup.Provider provider, RecipeOutput recipeOutput) {
+			BaseRecipeProvider generator = factory.apply(output, registries);
+			return new RecipeProvider(provider, recipeOutput) {
+				@Override
+				protected void buildRecipes() {
+					generator.buildRecipes(recipeOutput);
+				}
+			};
+		}
+
+		@Override
+		public String getName() {
+			return name;
+		}
 	}
 }
