@@ -37,9 +37,10 @@ public class ProcessingOutput {
 	public ProcessingOutput(Item item, int count, DataComponentPatch patch, float chance) { this.item = item; this.count = count; this.patch = patch; this.chance = chance; }
 	public ProcessingOutput(Identifier item, int count, float chance) { this(item, count, DataComponentPatch.EMPTY, chance); }
 	public ProcessingOutput(Identifier item, int count, DataComponentPatch patch, float chance) { this.item = Items.AIR; this.datagenOutput = item; this.count = count; this.patch = patch; this.chance = chance; }
-	private ItemStack getStack(int count) { var stack = new ItemStack(item, count); if (!patch.isEmpty()) stack.applyComponents(patch); return stack; }
+	private Item getItem() { return datagenOutput != null ? BuiltInRegistries.ITEM.getValue(datagenOutput) : item; }
+	private ItemStack getStack(int count) { var stack = new ItemStack(getItem(), count); if (!patch.isEmpty()) stack.applyComponents(patch); return stack; }
 	public ItemStack getStack() { return getStack(count); }
-	public ItemStackTemplate getTemplate() { return new ItemStackTemplate(item.builtInRegistryHolder(), count, patch); }
+	public ItemStackTemplate getTemplate() { return new ItemStackTemplate(getItem().builtInRegistryHolder(), count, patch); }
 	public float getChance() { return chance; }
 	public ItemStack rollOutput(RandomSource randomSource) {
 		if (chance < 1F) { int count = this.count; for (int roll = 0; roll < this.count; roll++) if (randomSource.nextFloat() > chance) count--; return count == 0 ? ItemStack.EMPTY : getStack(count); }
