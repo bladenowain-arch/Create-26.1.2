@@ -17,10 +17,12 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 
 import net.neoforged.neoforge.common.conditions.ICondition;
@@ -139,14 +141,14 @@ public class MechanicalCraftingRecipeBuilder {
 	public void build(RecipeOutput output, Identifier id) {
 		validate(id);
 		MechanicalCraftingRecipe recipe = new MechanicalCraftingRecipe(
-			"",
-			CraftingBookCategory.MISC,
+			new Recipe.CommonInfo(true),
+			new CraftingRecipe.CraftingBookInfo(CraftingBookCategory.MISC, ""),
 			ShapedRecipePattern.of(key, pattern),
-			new ItemStack(result, count),
+			new ItemStackTemplate(result, count),
 			acceptMirrored
 		);
-		ResourceKey<net.minecraft.world.item.crafting.Recipe<?>> key = ResourceKey.create(Registries.RECIPE, id);
-		output.accept(key, recipe, null, recipeConditions.toArray(ICondition[]::new));
+		ResourceKey<Recipe<?>> recipeKey = ResourceKey.create(Registries.RECIPE, id);
+		output.accept(recipeKey, recipe, null, recipeConditions.toArray(ICondition[]::new));
 	}
 
 	/**
