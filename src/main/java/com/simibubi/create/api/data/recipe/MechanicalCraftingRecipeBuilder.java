@@ -11,8 +11,10 @@ import com.google.common.collect.Sets;
 import com.simibubi.create.content.kinetics.crafter.MechanicalCraftingRecipe;
 
 import net.createmod.catnip.registry.RegisteredObjectsHelper;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -122,9 +124,9 @@ public class MechanicalCraftingRecipeBuilder {
 	 * {@link #build(RecipeOutput)} if the recipe id is the same as the result item id
 	 */
 	public void build(RecipeOutput output, String id) {
-		ResourceLocation resourcelocation = RegisteredObjectsHelper.getKeyOrThrow(this.result);
-		ResourceLocation idRs = ResourceLocation.parse(id);
-		if (idRs.equals(resourcelocation)) {
+		Identifier resultId = RegisteredObjectsHelper.getKeyOrThrow(this.result);
+		Identifier idRs = Identifier.parse(id);
+		if (idRs.equals(resultId)) {
 			throw new IllegalStateException("Shaped Recipe " + id + " should remove its 'id' argument");
 		} else {
 			this.build(output, idRs);
@@ -134,7 +136,7 @@ public class MechanicalCraftingRecipeBuilder {
 	/**
 	 * Builds this recipe into a {@link RecipeOutput}.
 	 */
-	public void build(RecipeOutput output, ResourceLocation id) {
+	public void build(RecipeOutput output, Identifier id) {
 		validate(id);
 		MechanicalCraftingRecipe recipe = new MechanicalCraftingRecipe(
 			"",
@@ -143,14 +145,15 @@ public class MechanicalCraftingRecipeBuilder {
 			new ItemStack(result, count),
 			acceptMirrored
 		);
-		output.accept(id, recipe, null, recipeConditions.toArray(ICondition[]::new));
+		ResourceKey<net.minecraft.world.item.crafting.Recipe<?>> key = ResourceKey.create(Registries.RECIPE, id);
+		output.accept(key, recipe, null, recipeConditions.toArray(ICondition[]::new));
 	}
 
 	/**
 	 * Makes sure that this recipe is valid.
 	 * @param recipeId The id of this recipe, only used for error messages.
 	 */
-	private void validate(ResourceLocation recipeId) {
+	private void validate(Identifier recipeId) {
 		if (pattern.isEmpty()) {
 			throw new IllegalStateException("No pattern is defined for shaped recipe " + recipeId + "!");
 		} else {
