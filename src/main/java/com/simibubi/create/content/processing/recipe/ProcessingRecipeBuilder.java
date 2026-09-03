@@ -85,10 +85,13 @@ public abstract class ProcessingRecipeBuilder<P extends ProcessingRecipeParams, 
 	public S output(ItemLike item) { return output(item, 1); }
 	public S output(float chance, ItemLike item) { return output(chance, item, 1); }
 	public S output(ItemLike item, int amount) { return output(1, item, amount); }
-	public S output(float chance, ItemLike item, int amount) { return output(chance, new ItemStack(item, amount)); }
+	public S output(float chance, ItemLike item, int amount) { return output(new ProcessingOutput(item.asItem(), amount, chance)); }
 	public S output(ItemStack output) { return output(1, output); }
 	public S output(float chance, ItemStack output) { return output(new ProcessingOutput(output, chance)); }
-	public S output(ItemStackTemplate output) { return output(new ProcessingOutput(output.create(), 1)); }
+	public S output(ItemStackTemplate output) { return output(1, output); }
+	public S output(float chance, ItemStackTemplate output) {
+		return output(new ProcessingOutput(output.item().value(), output.count(), output.components(), chance));
+	}
 	public S output(float chance, DatagenMod mod, String id, int amount) { return output(new ProcessingOutput(mod.asResource(id), amount, chance)); }
 	public S output(Identifier id) { return output(1, id, 1); }
 	public S output(DatagenMod mod, String id) { return output(1, mod.asResource(id), 1); }
