@@ -1,4 +1,4 @@
-name: Build
+name: Build 26.1.2
 
 on:
   push:
