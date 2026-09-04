@@ -71,9 +71,8 @@ public class BlueprintMenu extends GhostItemMenu<BlueprintSection> {
 
 		ServerPlayer serverplayerentity = (ServerPlayer) player;
 		CraftingContainer craftingInventory = new BlueprintCraftingInventory(this, ghostInventory);
-		Optional<RecipeHolder<CraftingRecipe>> optional = player.getServer()
-			.getRecipeManager()
-			.getRecipeFor(RecipeType.CRAFTING, craftingInventory.asCraftInput(), player.getCommandSenderWorld());
+		Optional<RecipeHolder<? extends CraftingRecipe>> optional = level.recipeAccess()
+			.getRecipeFor(RecipeType.CRAFTING, craftingInventory.asCraftInput(), level);
 
 		if (!optional.isPresent()) {
 			if (ghostInventory.getStackInSlot(9)
@@ -89,7 +88,7 @@ public class BlueprintMenu extends GhostItemMenu<BlueprintSection> {
 		}
 
 		CraftingRecipe icraftingrecipe = optional.get().value();
-		ItemStack itemstack = icraftingrecipe.assemble(craftingInventory.asCraftInput(), level.registryAccess());
+		ItemStack itemstack = icraftingrecipe.assemble(craftingInventory.asCraftInput());
 		ghostInventory.setStackInSlot(9, itemstack);
 		contentHolder.inferredIcon = true;
 		ItemStack toSend = itemstack.copy();

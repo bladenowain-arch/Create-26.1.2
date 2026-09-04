@@ -11,20 +11,31 @@ import com.simibubi.create.content.fluids.VirtualFluid;
 import io.netty.buffer.ByteBuf;
 import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
 import net.createmod.catnip.lang.Lang;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.ItemLike;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.FluidState;
 
+import net.neoforged.neoforge.client.fluid.FluidTintSource;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 public class PotionFluid extends VirtualFluid {
+
+	public static final FluidTintSource TINT_SOURCE = new FluidTintSource() {
+		@Override
+		public int color(FluidState state) {
+			return 0xffffffff;
+		}
+
+		@Override
+		public int colorAsStack(FluidStack stack) {
+			return stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).getColor() | 0xff000000;
+		}
+	};
 
 	public static PotionFluid createSource(Properties properties) {
 		return new PotionFluid(properties, true);
@@ -69,13 +80,8 @@ public class PotionFluid extends VirtualFluid {
 
 	public static class PotionFluidType extends TintedFluidType {
 
-		public PotionFluidType(net.neoforged.neoforge.fluids.FluidType.Properties properties, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
+		public PotionFluidType(net.neoforged.neoforge.fluids.FluidType.Properties properties, Identifier stillTexture, Identifier flowingTexture) {
 			super(properties, stillTexture, flowingTexture);
-		}
-
-		@Override
-		public int getTintColor(FluidStack stack) {
-			return stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).getColor() | 0xff000000;
 		}
 
 		@Override
@@ -85,12 +91,6 @@ public class PotionFluid extends VirtualFluid {
 				PotionFluidHandler.itemFromBottleType(stack.getOrDefault(AllDataComponents.POTION_FLUID_BOTTLE_TYPE, BottleType.REGULAR));
 			return Potion.getName(contents.potion(), itemFromBottleType.asItem().getDescriptionId() + ".effect.");
 		}
-
-		@Override
-		protected int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-			return NO_TINT;
-		}
-
 	}
 
 }

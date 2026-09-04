@@ -46,13 +46,14 @@ public class SandPaperPolishingRecipe extends StandardProcessingRecipe<SingleRec
 		List<RecipeHolder<Recipe<SingleRecipeInput>>> matchingRecipes = getMatchingRecipes(world, stack);
 		if (!matchingRecipes.isEmpty())
 			return matchingRecipes.get(0).value()
-				.assemble(new SingleRecipeInput(stack), world.registryAccess())
+				.assemble(new SingleRecipeInput(stack))
 				.copy();
 		return stack;
 	}
 
 	public static List<RecipeHolder<Recipe<SingleRecipeInput>>> getMatchingRecipes(Level world, ItemStack stack) {
-		return world.getRecipeManager()
-			.getRecipesFor(AllRecipeTypes.SANDPAPER_POLISHING.getType(), new SingleRecipeInput(stack), world);
+		return world.recipeAccess().recipeMap()
+			.getRecipesFor(AllRecipeTypes.SANDPAPER_POLISHING.getType(), new SingleRecipeInput(stack), world)
+			.toList();
 	}
 }

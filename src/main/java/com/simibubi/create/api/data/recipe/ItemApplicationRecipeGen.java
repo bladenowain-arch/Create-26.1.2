@@ -12,7 +12,7 @@ import com.simibubi.create.content.kinetics.deployer.ItemApplicationRecipeParams
 import com.simibubi.create.content.kinetics.deployer.ManualApplicationRecipe;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -56,7 +56,7 @@ public abstract class ItemApplicationRecipeGen extends ProcessingRecipeGen<ItemA
 	}
 
 	@Override
-	protected Builder<ManualApplicationRecipe> getBuilder(ResourceLocation id) {
+	protected Builder<ManualApplicationRecipe> getBuilder(Identifier id) {
 		return new Builder<>(ManualApplicationRecipe::new, id);
 	}
 }

@@ -10,7 +10,7 @@ import com.simibubi.create.content.processing.recipe.StandardProcessingRecipe.Bu
 
 import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * A base class for {@link StandardProcessingRecipe}, containing helper methods
@@ -29,7 +29,7 @@ public abstract class StandardProcessingRecipeGen<R extends StandardProcessingRe
 	}
 
 	@Override
-	protected Builder<R> getBuilder(ResourceLocation id) {
+	protected Builder<R> getBuilder(Identifier id) {
 		return new StandardProcessingRecipe.Builder<>(getSerializer().factory(), id);
 	}
 }

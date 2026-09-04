@@ -8,7 +8,6 @@ import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
@@ -26,23 +25,14 @@ public abstract class StandardProcessingRecipe<T extends RecipeInput> extends Pr
 
 	public static class Builder<R extends StandardProcessingRecipe<?>>
 		extends ProcessingRecipeBuilder<ProcessingRecipeParams, R, Builder<R>> {
-
-		public Builder(Factory<R> factory, ResourceLocation recipeId) {
+		public Builder(Factory<R> factory, net.minecraft.resources.Identifier recipeId) {
 			super(factory, recipeId);
 		}
-
-		@Override
-		protected ProcessingRecipeParams createParams() {
-			return new ProcessingRecipeParams();
-		}
-
-		@Override
-		public Builder<R> self() {
-			return this;
-		}
+		@Override protected ProcessingRecipeParams createParams() { return new ProcessingRecipeParams(); }
+		@Override public Builder<R> self() { return this; }
 	}
 
-	public static class Serializer<R extends StandardProcessingRecipe<?>> implements RecipeSerializer<R> {
+	public static class Serializer<R extends StandardProcessingRecipe<?>> {
 		private final Factory<R> factory;
 		private final MapCodec<R> codec;
 		private final StreamCodec<RegistryFriendlyByteBuf, R> streamCodec;
@@ -53,18 +43,10 @@ public abstract class StandardProcessingRecipe<T extends RecipeInput> extends Pr
 			this.streamCodec = ProcessingRecipe.streamCodec(factory, ProcessingRecipeParams.STREAM_CODEC);
 		}
 
-		@Override
-		public MapCodec<R> codec() {
-			return codec;
+		public RecipeSerializer<R> serializer() {
+			return new RecipeSerializer<>(codec, streamCodec);
 		}
 
-		@Override
-		public StreamCodec<RegistryFriendlyByteBuf, R> streamCodec() {
-			return streamCodec;
-		}
-
-		public Factory<R> factory() {
-			return factory;
-		}
+		public Factory<R> factory() { return factory; }
 	}
 }
