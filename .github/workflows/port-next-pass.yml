@@ -1,0 +1,51 @@
+name: Port next pass
+
+on:
+  push:
+    branches: [port/26.1.2]
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: port/26.1.2
+          fetch-depth: 0
+      - name: Apply 26.1 recipe API migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=src/main/java/com/simibubi/create/foundation/data/recipe/CreateStandardRecipeGen.java
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('src/main/java/com/simibubi/create/foundation/data/recipe/CreateStandardRecipeGen.java')
+          s=p.read_text()
+          s=s.replace('net.minecraft.advancements.critereon.ItemPredicate', 'net.minecraft.advancements.criterion.ItemPredicate')
+          s=s.replace('import net.minecraft.resources.ResourceLocation;', 'import net.minecraft.resources.Identifier;')
+          s=s.replace('ResourceLocation', 'Identifier')
+          s=s.replace('import net.minecraft.resources.Identifier;\nimport net.minecraft.resources.Identifier;', 'import net.minecraft.resources.Identifier;')
+          s=s.replace('public ItemStack assemble(RecipeInput input, HolderLookup.Provider registries)', 'public ItemStack assemble(RecipeInput input)')
+          s=s.replace('public ItemStack getResultItem(HolderLookup.Provider registries)', 'public ItemStackTemplate getResultItem()')
+          s=s.replace('private record FakeItemStack(Identifier id)', 'private record FakeItemStack(Identifier id)')
+          s=s.replace('ResourceKey<RecipeSerializer<?>> wrappedKey', 'ResourceKey<RecipeSerializer<?>> wrappedKey')
+          s=s.replace('public void accept(Identifier id, Recipe<?> recipe, @Nullable AdvancementHolder advancement, ICondition... conditions)', 'public void accept(ResourceKey<Recipe<?>> id, Recipe<?> recipe, @Nullable AdvancementHolder advancement, ICondition... conditions)')
+          s=s.replace('SpecialRecipeBuilder.special(builder)', 'SpecialRecipeBuilder.special(builder.apply(CraftingBookCategory.MISC))')
+          s=s.replace('b.save(consumer, location.toString());', 'b.save(consumer, ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE, location));')
+          p.write_text(s)
+          PY
+          git diff --check
+          git diff -- src/main/java/com/simibubi/create/foundation/data/recipe/CreateStandardRecipeGen.java
+      - name: Commit migration
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/main/java/com/simibubi/create/foundation/data/recipe/CreateStandardRecipeGen.java
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'port: migrate standard recipe generator to 26.1 APIs'
+          git push origin HEAD:port/26.1.2
