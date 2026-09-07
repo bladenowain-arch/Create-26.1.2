@@ -40,6 +40,7 @@ jobs:
           s=s.replace('public void accept(Identifier id, Recipe<?> recipe, @Nullable AdvancementHolder advancement, ICondition... conditions)', 'public void accept(ResourceKey<Recipe<?>> id, Recipe<?> recipe, @Nullable AdvancementHolder advancement, ICondition... conditions)')
           s=s.replace('SpecialRecipeBuilder.special(builder)', 'SpecialRecipeBuilder.special(builder.apply(CraftingBookCategory.MISC))')
           s=s.replace('b.save(consumer, location.toString());', 'b.save(consumer, ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE, location));')
+          s=s.replace('RecipeCategory.MISC, isOtherMod ? Items.DIRT : result.get(), exp,\n\t\t\t\t\t\t(int) (cookingTime * cookingTimeModifier), serializer, factory)', 'RecipeCategory.MISC, isOtherMod ? Items.DIRT : result.get(), exp,\n\t\t\t\t\t\t(int) (cookingTime * cookingTimeModifier), CraftingBookCategory.MISC, factory)')
           p.write_text(s)
           PY
           git diff --check
