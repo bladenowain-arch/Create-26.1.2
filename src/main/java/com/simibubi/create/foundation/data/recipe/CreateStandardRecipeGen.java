@@ -68,6 +68,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.BlastingRecipe;
@@ -1688,7 +1689,7 @@ public final class CreateStandardRecipeGen extends BaseRecipeProvider {
 
 					SimpleCookingRecipeBuilder b = builder.apply(SimpleCookingRecipeBuilder.generic(ingredient.get(),
 						RecipeCategory.MISC, isOtherMod ? Items.DIRT : result.get(), exp,
-						(int) (cookingTime * cookingTimeModifier), serializer, factory));
+						(int) (cookingTime * cookingTimeModifier), CraftingBookCategory.MISC, factory));
 					if (unlockedBy != null)
 						b.unlockedBy("has_item", inventoryTrigger(unlockedBy.get()));
 
