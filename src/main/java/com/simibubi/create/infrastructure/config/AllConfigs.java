@@ -13,7 +13,6 @@ import net.createmod.catnip.config.ConfigBase;
 
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.config.ModConfigEvent;
@@ -57,7 +56,7 @@ public class AllConfigs {
 		return config;
 	}
 
-	public static void register(ModLoadingContext context, ModContainer container) {
+	public static void register(ModContainer container) {
 		client = register(CClient::new, ModConfig.Type.CLIENT);
 		common = register(CCommon::new, ModConfig.Type.COMMON);
 		server = register(CServer::new, ModConfig.Type.SERVER);
@@ -73,16 +72,14 @@ public class AllConfigs {
 	@SubscribeEvent
 	public static void onLoad(ModConfigEvent.Loading event) {
 		for (ConfigBase config : CONFIGS.values())
-			if (config.specification == event.getConfig()
-				.getSpec())
+			if (config.specification == event.getConfig().getSpec())
 				config.onLoad();
 	}
 
 	@SubscribeEvent
 	public static void onReload(ModConfigEvent.Reloading event) {
 		for (ConfigBase config : CONFIGS.values())
-			if (config.specification == event.getConfig()
-				.getSpec())
+			if (config.specification == event.getConfig().getSpec())
 				config.onReload();
 	}
 

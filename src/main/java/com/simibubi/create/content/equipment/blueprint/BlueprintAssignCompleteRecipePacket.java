@@ -4,21 +4,25 @@ import com.simibubi.create.AllPackets;
 import net.createmod.catnip.net.base.ServerboundPacketPayload;
 import io.netty.buffer.ByteBuf;
 
+import net.minecraft.core.Registries;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.crafting.Recipe;
 
-public record BlueprintAssignCompleteRecipePacket(ResourceLocation recipeId) implements ServerboundPacketPayload {
-	public static final StreamCodec<ByteBuf, com.simibubi.create.content.equipment.blueprint.BlueprintAssignCompleteRecipePacket> STREAM_CODEC = ResourceLocation.STREAM_CODEC.map(
-			com.simibubi.create.content.equipment.blueprint.BlueprintAssignCompleteRecipePacket::new, com.simibubi.create.content.equipment.blueprint.BlueprintAssignCompleteRecipePacket::recipeId
+public record BlueprintAssignCompleteRecipePacket(Identifier recipeId) implements ServerboundPacketPayload {
+	public static final StreamCodec<ByteBuf, BlueprintAssignCompleteRecipePacket> STREAM_CODEC = Identifier.STREAM_CODEC.map(
+			BlueprintAssignCompleteRecipePacket::new, BlueprintAssignCompleteRecipePacket::recipeId
 	);
 
 	@Override
 	public void handle(ServerPlayer player) {
 		if (player.containerMenu instanceof BlueprintMenu c) {
+			ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, recipeId);
 			player.level()
-					.getRecipeManager()
-					.byKey(recipeId)
+					.recipeAccess()
+					.byKey(key)
 					.ifPresent(r -> BlueprintItem.assignCompleteRecipe(c.player.level(), c.ghostInventory, r.value()));
 		}
 	}

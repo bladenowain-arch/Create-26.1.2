@@ -21,8 +21,8 @@ import net.createmod.catnip.lang.Lang;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -40,14 +40,14 @@ import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
 public class AllTags {
 	@ScheduledForRemoval(inVersion = "1.21.1+ Port")
 	@Deprecated(since = "6.0.7", forRemoval = true)
-	public static <T> TagKey<T> optionalTag(Registry<T> registry, ResourceLocation id) {
+	public static <T> TagKey<T> optionalTag(Registry<T> registry, Identifier id) {
 		return TagKey.create(registry.key(), id);
 	}
 
 	@ScheduledForRemoval(inVersion = "1.21.1+ Port")
 	@Deprecated(since = "6.0.7", forRemoval = true)
 	public static <T> TagKey<T> commonTag(Registry<T> registry, String path) {
-		return optionalTag(registry, ResourceLocation.fromNamespaceAndPath("c", path));
+		return optionalTag(registry, Identifier.fromNamespaceAndPath("c", path));
 	}
 
 	@ScheduledForRemoval(inVersion = "1.21.1+ Port")
@@ -82,11 +82,11 @@ public class AllTags {
 			this.id = id;
 		}
 
-		public ResourceLocation id(String path) {
-			return ResourceLocation.fromNamespaceAndPath(this.id, path);
+		public Identifier id(String path) {
+			return Identifier.fromNamespaceAndPath(this.id, path);
 		}
 
-		public ResourceLocation id(Enum<?> entry, @Nullable String pathOverride) {
+		public Identifier id(Enum<?> entry, @Nullable String pathOverride) {
 			return this.id(pathOverride != null ? pathOverride : Lang.asId(entry.name()));
 		}
 	}
@@ -216,7 +216,6 @@ public class AllTags {
 		ALLURITE(MOD, "stone_types/galosphere/allurite"),
 		AMETHYST(MOD, "stone_types/galosphere/amethyst"),
 		LUMIERE(MOD, "stone_types/galosphere/lumiere"),
-
 		CERTUS_QUARTZ(COMMON, "gems/certus_quartz"),
 
 		AMETRINE_ORES(COMMON, "ores/ametrine"),

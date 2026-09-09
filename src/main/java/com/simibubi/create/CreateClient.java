@@ -12,6 +12,7 @@ import com.simibubi.create.content.decoration.encasing.CasingConnectivity;
 import com.simibubi.create.content.equipment.bell.SoulPulseEffectHandler;
 import com.simibubi.create.content.equipment.potatoCannon.PotatoCannonRenderHandler;
 import com.simibubi.create.content.equipment.zapper.ZapperRenderHandler;
+import com.simibubi.create.content.fluids.potion.PotionFluid;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import com.simibubi.create.content.kinetics.simpleRelays.CogWheelBlock;
 import com.simibubi.create.content.kinetics.waterwheel.WaterWheelRenderer;
@@ -35,6 +36,8 @@ import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.FluidModel;
+import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -46,6 +49,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterFluidModelsEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
 @Mod(value = Create.ID, dist = Dist.CLIENT)
@@ -75,6 +79,7 @@ public class CreateClient {
 		IEventBus neoEventBus = NeoForge.EVENT_BUS;
 
 		modEventBus.addListener(CreateClient::clientInit);
+		modEventBus.addListener(CreateClient::registerFluidModels);
 		modEventBus.addListener(AllParticleTypes::registerFactories);
 
 		AllInstanceTypes.init();
@@ -85,8 +90,31 @@ public class CreateClient {
 		POTATO_CANNON_RENDER_HANDLER.registerListeners(neoEventBus);
 
 		Mods.FTBLIBRARY.executeIfInstalled(() -> () -> FTBIntegration.init(modEventBus, neoEventBus));
-		Mods.SODIUM.executeIfInstalled(() -> () -> SodiumCompat.init(modEventBus, neoEventBus));
+		Mods.SODIUM.executeIfInstalled(() -> () -> SodiumCompat.init(neoEventBus));
 		PojavChecker.init();
+	}
+
+	private static void registerFluidModels(RegisterFluidModelsEvent event) {
+		event.register(new FluidModel.Unbaked(
+			new Material(Create.asResource("fluid/potion_still")),
+			new Material(Create.asResource("fluid/potion_flow")),
+			null,
+			PotionFluid.TINT_SOURCE), AllFluids.POTION.get(), AllFluids.POTION.get().getFlowing());
+		event.register(new FluidModel.Unbaked(
+			new Material(Create.asResource("fluid/tea_still")),
+			new Material(Create.asResource("fluid/tea_flow")),
+			null,
+			null), AllFluids.TEA.get(), AllFluids.TEA.get().getFlowing());
+		event.register(new FluidModel.Unbaked(
+			new Material(Create.asResource("fluid/honey_still")),
+			new Material(Create.asResource("fluid/honey_flow")),
+			null,
+			null), AllFluids.HONEY.get(), AllFluids.HONEY.get().getFlowing());
+		event.register(new FluidModel.Unbaked(
+			new Material(Create.asResource("fluid/chocolate_still")),
+			new Material(Create.asResource("fluid/chocolate_flow")),
+			null,
+			null), AllFluids.CHOCOLATE.get(), AllFluids.CHOCOLATE.get().getFlowing());
 	}
 
 	public static void clientInit(final FMLClientSetupEvent event) {
@@ -159,7 +187,7 @@ public class CreateClient {
                             Component.literal("Click here to disable this warning")));
             });
 
-		mc.player.displayClientMessage(text, false);
+		mc.player.sendSystemMessage(text);
 	}
 
 }

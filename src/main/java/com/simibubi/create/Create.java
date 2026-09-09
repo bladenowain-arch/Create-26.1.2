@@ -48,8 +48,8 @@ import com.simibubi.create.infrastructure.worldgen.AllPlacementModifiers;
 import net.createmod.catnip.lang.FontHelper;
 import net.createmod.catnip.lang.LangBuilder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.Level;
@@ -57,7 +57,6 @@ import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForgeMod;
@@ -69,31 +68,17 @@ public class Create {
 	public static final String NAME = "Create";
 
 	public static final Logger LOGGER = LogUtils.getLogger();
-
 	private static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
-	public static final Gson GSON = new GsonBuilder().setPrettyPrinting()
-		.disableHtmlEscaping()
-		.create();
+	public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
-	/**
-	 * Use the {@link Random} of a local {@link Level} or {@link Entity} or create one
-	 */
 	@Deprecated
 	public static final Random RANDOM = new Random();
 
-	/**
-	 * <b>Other mods should not use this field!</b> If you are an addon developer, create your own instance of
-	 * {@link CreateRegistrate}.
-	 * <p>
-	 * If you were using this instance to register a callback listener use {@link CreateRegistrateRegistrationCallback#register} instead.
-	 */
 	private static final CreateRegistrate REGISTRATE = CreateRegistrate.create(ID)
 		.defaultCreativeTab((ResourceKey<CreativeModeTab>) null)
-		.setTooltipModifierFactory(item ->
-			new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
-				.andThen(TooltipModifier.mapNull(KineticStats.create(item)))
-		);
+		.setTooltipModifierFactory(item -> new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
+			.andThen(TooltipModifier.mapNull(KineticStats.create(item))));
 
 	public static final ServerSchematicLoader SCHEMATIC_RECEIVER = new ServerSchematicLoader();
 	public static final RedstoneLinkNetworkHandler REDSTONE_LINK_NETWORK_HANDLER = new RedstoneLinkNetworkHandler();
@@ -108,10 +93,7 @@ public class Create {
 
 	public static void onCtor(IEventBus modEventBus, ModContainer modContainer) {
 		LOGGER.info("{} {} initializing! Commit hash: {}", NAME, CreateBuildInfo.VERSION, CreateBuildInfo.GIT_COMMIT);
-		ModLoadingContext modLoadingContext = ModLoadingContext.get();
-
 		REGISTRATE.registerEventListeners(modEventBus);
-
 		AllSoundEvents.prepare();
 		AllCreativeModeTabs.register(modEventBus);
 		AllArmorMaterials.register(modEventBus);
@@ -136,31 +118,19 @@ public class Create {
 		AllDataComponents.register(modEventBus);
 		AllMapDecorationTypes.register(modEventBus);
 		AllMountedStorageTypes.register();
-
-		AllConfigs.register(modLoadingContext, modContainer);
-
-		// TODO - Make these use Registry.register and move them into the RegisterEvent
+		AllConfigs.register(modContainer);
 		AllPackagePortTargetTypes.register(modEventBus);
-
 		AllSchematicStateFilters.registerDefaults();
-
-		// FIXME: some of these registrations are not thread-safe
 		BogeySizes.init();
 		AllBogeyStyles.init();
-		// ----
-
 		ComputerCraftProxy.register();
-
 		NeoForgeMod.enableMilkFluid();
-
 		modEventBus.addListener(Create::init);
 		modEventBus.addListener(Create::onRegister);
 		modEventBus.addListener(AllEntityTypes::registerEntityAttributes);
 		modEventBus.addListener(EventPriority.HIGHEST, CreateDatagen::gatherDataHighPriority);
 		modEventBus.addListener(EventPriority.LOWEST, CreateDatagen::gatherData);
 		modEventBus.addListener(AllSoundEvents::register);
-
-		// FIXME: this is not thread-safe
 		Mods.CURIOS.executeIfInstalled(() -> () -> Curios.init(modEventBus));
 		Mods.INVENTORYSORTER.executeIfInstalled(() -> () -> InventorySorterCompat.init(modEventBus));
 	}
@@ -168,11 +138,7 @@ public class Create {
 	public static void init(final FMLCommonSetupEvent event) {
 		AllFluids.registerFluidInteractions();
 		CreateNBTProcessors.register();
-
 		event.enqueueWork(() -> {
-			// TODO: custom registration should all happen in one place
-			// Most registration happens in the constructor.
-			// These registrations use Create's registered objects directly so they must run after registration has finished.
 			BoilerHeaters.registerDefaults();
 			AllPortalTracks.registerDefaults();
 			AllBlockSpoutingBehaviours.registerDefaults();
@@ -183,7 +149,6 @@ public class Create {
 			AllMountedDispenseItemBehaviors.registerDefaults();
 			AllUnpackingHandlers.registerDefaults();
 			AllInventoryIdentifiers.registerDefaults();
-			// --
 		});
 	}
 
@@ -195,7 +160,6 @@ public class Create {
 		AllPotatoProjectileRenderModes.init();
 		AllPotatoProjectileEntityHitActions.init();
 		AllPotatoProjectileBlockHitActions.init();
-
 		if (event.getRegistry() == BuiltInRegistries.TRIGGER_TYPES) {
 			AllAdvancements.register();
 			AllTriggers.register();
@@ -206,8 +170,8 @@ public class Create {
 		return new LangBuilder(ID);
 	}
 
-	public static ResourceLocation asResource(String path) {
-		return ResourceLocation.fromNamespaceAndPath(ID, path);
+	public static Identifier asResource(String path) {
+		return Identifier.fromNamespaceAndPath(ID, path);
 	}
 
 	public static CreateRegistrate registrate() {

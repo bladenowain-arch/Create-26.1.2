@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.api.event.BlockEntityBehaviourEvent;
 import com.simibubi.create.api.schematic.nbt.PartialSafeNBT;
 import com.simibubi.create.api.schematic.requirement.SpecialBlockEntityItemRequirement;
@@ -24,14 +25,20 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import net.neoforged.neoforge.common.NeoForge;
 
 public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 	implements PartialSafeNBT, IInteractionChecker, SpecialBlockEntityItemRequirement, VirtualBlockEntity {
+
+	private static final MapCodec<CompoundTag> ROOT_NBT_CODEC = MapCodec.assumeMapUnsafe(CompoundTag.CODEC);
 
 	private final Map<BehaviourType<?>, BlockEntityBehaviour> behaviours = new Reference2ObjectArrayMap<>();
 	private boolean initialized = false;
@@ -39,15 +46,11 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 	protected int lazyTickRate;
 	protected int lazyTickCounter;
 	private boolean chunkUnloaded;
-
-	// Used for simulating this BE in a client-only setting
 	private boolean virtualMode;
 
 	public SmartBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
-
 		setLazyTickRate(10);
-
 		ArrayList<BlockEntityBehaviour> list = new ArrayList<>();
 		addBehaviours(list);
 		list.forEach(b -> behaviours.put(b.getType(), b));
@@ -55,10 +58,6 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 
 	public abstract void addBehaviours(List<BlockEntityBehaviour> behaviours);
 
-	/**
-	 * Gets called just before reading block entity data for behaviours. Register
-	 * anything here that depends on your custom BE data.
-	 */
 	public void addBehavioursDeferred(List<BlockEntityBehaviour> behaviours) {}
 
 	public void initialize() {
@@ -66,7 +65,6 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 			firstNbtRead = false;
 			NeoForge.EVENT_BUS.post(new BlockEntityBehaviourEvent(this, behaviours));
 		}
-
 		forEachBehaviour(BlockEntityBehaviour::initialize);
 		lazyTick();
 	}
@@ -76,37 +74,30 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 			initialize();
 			initialized = true;
 		}
-
 		if (lazyTickCounter-- <= 0) {
 			lazyTickCounter = lazyTickRate;
 			lazyTick();
 		}
-
 		forEachBehaviour(BlockEntityBehaviour::tick);
 	}
 
 	public void lazyTick() {}
 
-	/**
-	 * Hook only these in future subclasses of STE
-	 */
 	protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
-		super.saveAdditional(tag, registries);
 		forEachBehaviour(tb -> tb.write(tag, registries, clientPacket));
 	}
 
 	@Override
 	public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
-		super.saveAdditional(tag, registries);
+		TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, registries);
+		super.saveAdditional(output);
+		tag.merge(output.buildResult());
 		forEachBehaviour(tb -> {
 			if (tb.isSafeNBT())
 				tb.writeSafe(tag, registries);
 		});
 	}
 
-	/**
-	 * Hook only these in future subclasses of STE
-	 */
 	protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
 		if (firstNbtRead) {
 			firstNbtRead = false;
@@ -115,13 +106,13 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 			list.forEach(b -> behaviours.put(b.getType(), b));
 			NeoForge.EVENT_BUS.post(new BlockEntityBehaviourEvent(this, behaviours));
 		}
-		super.loadAdditional(tag, registries);
 		forEachBehaviour(tb -> tb.read(tag, registries, clientPacket));
 	}
 
 	@Override
-	protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-		read(tag, registries, false);
+	protected void loadAdditional(@NotNull ValueInput input) {
+		super.loadAdditional(input);
+		read(input.read(ROOT_NBT_CODEC).orElseGet(CompoundTag::new), input.lookup(), false);
 	}
 
 	@Override
@@ -138,39 +129,35 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 		invalidate();
 	}
 
-	/**
-	 * Block destroyed or Chunk unloaded. Usually invalidates capabilities
-	 */
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		destroy();
+		super.preRemoveSideEffects(pos, state);
+	}
+
 	public void invalidate() {
 		forEachBehaviour(BlockEntityBehaviour::unload);
 	}
 
-	/**
-	 * Block destroyed or picked up by a contraption. Usually detaches kinetics
-	 */
 	public void remove() {}
 
-	/**
-	 * Block destroyed or replaced. Requires Block to call IBE::onRemove
-	 */
 	public void destroy() {
 		forEachBehaviour(BlockEntityBehaviour::destroy);
 	}
 
 	@Override
-	public final void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		write(tag, registries, false);
+	protected final void saveAdditional(ValueOutput output) {
+		super.saveAdditional(output);
+		if (getLevel() != null) {
+			CompoundTag tag = new CompoundTag();
+			HolderLookup.Provider registries = getLevel().registryAccess();
+			write(tag, registries, false);
+			output.store(ROOT_NBT_CODEC, tag);
+		}
 	}
 
-	@Override
-	public final void readClient(CompoundTag tag, HolderLookup.Provider registries) {
-		read(tag, registries, true);
-	}
-
-	@Override
-	public final CompoundTag writeClient(CompoundTag tag, HolderLookup.Provider registries) {
-		write(tag, registries, true);
-		return tag;
+	public final void readClient(ValueInput input) {
+		read(input.read(ROOT_NBT_CODEC).orElseGet(CompoundTag::new), input.lookup(), true);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -193,15 +180,13 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 	}
 
 	public ItemRequirement getRequiredItems(BlockState state) {
-		return getAllBehaviours().stream()
-			.reduce(ItemRequirement.NONE, (r, b) -> r.union(b.getRequiredItems()), ItemRequirement::union);
+		return getAllBehaviours().stream().reduce(ItemRequirement.NONE, (r, b) -> r.union(b.getRequiredItems()), ItemRequirement::union);
 	}
 
 	public void removeBehaviour(BehaviourType<?> type) {
 		BlockEntityBehaviour remove = behaviours.remove(type);
-		if (remove != null) {
+		if (remove != null)
 			remove.unload();
-		}
 	}
 
 	public void setLazyTickRate(int slowTickRate) {
@@ -209,24 +194,14 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 		this.lazyTickCounter = slowTickRate;
 	}
 
-	public void markVirtual() {
-		virtualMode = true;
-	}
-
-	public boolean isVirtual() {
-		return virtualMode;
-	}
-
-	public boolean isChunkUnloaded() {
-		return chunkUnloaded;
-	}
+	public void markVirtual() { virtualMode = true; }
+	public boolean isVirtual() { return virtualMode; }
+	public boolean isChunkUnloaded() { return chunkUnloaded; }
 
 	@Override
 	public boolean canPlayerUse(Player player) {
-		if (level != null && level.getBlockEntity(worldPosition) == this) {
+		if (level != null && level.getBlockEntity(worldPosition) == this)
 			return player.canInteractWithBlock(worldPosition, 8);
-		}
-
 		return false;
 	}
 
@@ -261,5 +236,4 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 		if (behaviour != null)
 			behaviour.awardPlayerIfNear(advancement, range);
 	}
-
 }

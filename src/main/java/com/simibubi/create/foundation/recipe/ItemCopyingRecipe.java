@@ -5,11 +5,9 @@ import org.jetbrains.annotations.Nullable;
 import com.simibubi.create.AllRecipeTypes;
 
 import net.createmod.catnip.data.IntAttached;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -36,8 +34,8 @@ public class ItemCopyingRecipe extends CustomRecipe {
 		DataComponentType<?> getComponentType();
 	}
 
-	public ItemCopyingRecipe(CraftingBookCategory category) {
-		super(category);
+	public ItemCopyingRecipe() {
+		super();
 	}
 
 	@Override
@@ -46,7 +44,7 @@ public class ItemCopyingRecipe extends CustomRecipe {
 	}
 
 	@Override
-	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
+	public ItemStack assemble(CraftingInput input) {
 		IntAttached<ItemStack> copyCheck = copyCheck(input);
 		if (copyCheck == null)
 			return ItemStack.EMPTY;
@@ -97,10 +95,12 @@ public class ItemCopyingRecipe extends CustomRecipe {
 		return IntAttached.with(copyTargets, itemToCopy);
 	}
 
+	@Override
 	public RecipeSerializer<?> getSerializer() {
 		return AllRecipeTypes.ITEM_COPYING.getSerializer();
 	}
 
+	@Override
 	public boolean canCraftInDimensions(int width, int height) {
 		return width >= 2 && height >= 2;
 	}

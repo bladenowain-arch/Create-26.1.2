@@ -22,10 +22,8 @@ import net.createmod.catnip.math.Pointing;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -143,16 +141,15 @@ public class RecipeGridHandler {
 		items.calcStats();
 		CraftingInput craftingInput = MechanicalCraftingInput.of(items);
 		ItemStack result = null;
-		RegistryAccess registryAccess = world.registryAccess();
 		if (AllConfigs.server().recipes.allowRegularCraftingInCrafter.get())
-			result = world.getRecipeManager()
+			result = world.recipeAccess()
 				.getRecipeFor(RecipeType.CRAFTING, craftingInput, world)
 				.filter(r -> isRecipeAllowed(r, craftingInput))
-				.map(r -> r.value().assemble(craftingInput, registryAccess))
+				.map(r -> r.value().assemble(craftingInput))
 				.orElse(null);
 		if (result == null)
 			result = AllRecipeTypes.MECHANICAL_CRAFTING.find(craftingInput, world)
-				.map(r -> r.value().assemble(craftingInput, registryAccess))
+				.map(r -> r.value().assemble(craftingInput))
 				.orElse(null);
 		return result;
 	}
@@ -195,24 +192,25 @@ public class RecipeGridHandler {
 
 		public void write(CompoundTag nbt, HolderLookup.Provider registries) {
 			ListTag gridNBT = new ListTag();
-			grid.forEach((pair, stack) -> {
-				CompoundTag entry = new CompoundTag();
-				entry.putInt("x", pair.getKey());
-				entry.putInt("y", pair.getValue());
-				entry.put("item", stack.saveOptional(registries));
-				gridNBT.add(entry);
-			});
+			grid.forEach(
+				(pair, stack) -> {
+					CompoundTag entry = new CompoundTag();
+					entry.putInt("x", pair.getKey());
+					entry.putInt("y", pair.getValue());
+					entry.put("item", stack.saveOptional(registries));
+					gridNBT.add(entry);
+				});
 			nbt.put("Grid", gridNBT);
 		}
 
 		public static GroupedItems read(CompoundTag nbt, HolderLookup.Provider registries) {
 			GroupedItems items = new GroupedItems();
-			ListTag gridNBT = nbt.getList("Grid", Tag.TAG_COMPOUND);
+			ListTag gridNBT = nbt.getListOrEmpty("Grid");
 			gridNBT.forEach(inbt -> {
 				CompoundTag entry = (CompoundTag) inbt;
-				int x = entry.getInt("x");
-				int y = entry.getInt("y");
-				ItemStack stack = ItemStack.parseOptional(registries, entry.getCompound("item"));
+				int x = entry.getIntOr("x", 0);
+				int y = entry.getIntOr("y", 0);
+				ItemStack stack = ItemStack.parseOptional(registries, entry.getCompoundOrEmpty("item"));
 				items.grid.put(Pair.of(x, y), stack);
 			});
 			return items;

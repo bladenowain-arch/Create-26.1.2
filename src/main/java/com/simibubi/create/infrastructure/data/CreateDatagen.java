@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import com.simibubi.create.AllKeys;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.Create;
+import com.simibubi.create.api.data.recipe.BaseRecipeProvider;
 import com.simibubi.create.compat.curios.CuriosDataGenerator;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.data.CreateDatamapProvider;
@@ -55,18 +56,20 @@ public class CreateDatagen {
 		generator.addProvider(event.includeServer(), new CreateMountedItemStorageTypeTagsProvider(output, lookupProvider, existingFileHelper));
 		generator.addProvider(event.includeServer(), new DamageTypeTagGen(output, lookupProvider, existingFileHelper));
 		generator.addProvider(event.includeServer(), new AllAdvancements(output, lookupProvider));
-		generator.addProvider(event.includeServer(), new CreateStandardRecipeGen(output, lookupProvider));
-		generator.addProvider(event.includeServer(), new CreateMechanicalCraftingRecipeGen(output, lookupProvider));
-		generator.addProvider(event.includeServer(), new CreateSequencedAssemblyRecipeGen(output, lookupProvider));
+		generator.addProvider(event.includeServer(), new BaseRecipeProvider.Runner(output, lookupProvider,
+				CreateStandardRecipeGen::new, "Create's Standard Recipes"));
+		generator.addProvider(event.includeServer(), new BaseRecipeProvider.Runner(output, lookupProvider,
+				CreateMechanicalCraftingRecipeGen::new, "Create's Mechanical Crafting Recipes"));
+		generator.addProvider(event.includeServer(), new BaseRecipeProvider.Runner(output, lookupProvider,
+				CreateSequencedAssemblyRecipeGen::new, "Create's Sequenced Assembly Recipes"));
 		generator.addProvider(event.includeServer(), new CreateDatamapProvider(output, lookupProvider));
 		generator.addProvider(event.includeServer(), new VanillaHatOffsetGenerator(output, lookupProvider));
 		generator.addProvider(event.includeServer(), new CuriosDataGenerator(output, lookupProvider, existingFileHelper));
 		generator.addProvider(event.includeServer(), new CreateEnchantmentTagsProvider(output, lookupProvider, existingFileHelper));
 		generator.addProvider(event.includeClient(), new CreateWikiBlockInfoProvider(output));
 
-		if (event.includeServer()) {
+		if (event.includeServer())
 			CreateRecipeProvider.registerAllProcessing(generator, output, lookupProvider);
-		}
 	}
 
 	private static void addExtraRegistrateData() {
@@ -74,7 +77,6 @@ public class CreateDatagen {
 
 		Create.registrate().addDataGenerator(ProviderType.LANG, provider -> {
 			BiConsumer<String, String> langConsumer = provider::add;
-
 			provideDefaultLang("interface", langConsumer);
 			provideDefaultLang("tooltips", langConsumer);
 			AllAdvancements.provideLang(langConsumer);
@@ -88,21 +90,16 @@ public class CreateDatagen {
 	private static void provideDefaultLang(String fileName, BiConsumer<String, String> consumer) {
 		String path = "assets/create/lang/default/" + fileName + ".json";
 		JsonElement jsonElement = FilesHelper.loadJsonResource(path);
-		if (jsonElement == null) {
+		if (jsonElement == null)
 			throw new IllegalStateException(String.format("Could not find default lang file: %s", path));
-		}
 		JsonObject jsonObject = jsonElement.getAsJsonObject();
-		for (Entry<String, JsonElement> entry : jsonObject.entrySet()) {
-			String key = entry.getKey();
-			String value = entry.getValue().getAsString();
-			consumer.accept(key, value);
-		}
+		for (Entry<String, JsonElement> entry : jsonObject.entrySet())
+			consumer.accept(entry.getKey(), entry.getValue().getAsString());
 	}
 
 	private static void providePonderLang(BiConsumer<String, String> consumer) {
 		// Register this since FMLClientSetupEvent does not run during datagen
 		PonderIndex.addPlugin(new CreatePonderPlugin());
-
 		PonderIndex.getLangAccess().provideLang(Create.ID, consumer);
 	}
 }
